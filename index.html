@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Renderer</title>
+  <style>
+    :root {
+      --primary: #3a86ff;
+      --background: #fafafa;
+      --card: #ffffff;
+      --text: #333;
+      --border: #eaeaea;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--background);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    header {
+      margin-bottom: 2rem;
+    }
+    
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin: 0;
+      color: var(--text);
+    }
+    
+    .editor-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    
+    .input-area {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      background: var(--card);
+    }
+    
+    textarea {
+      width: 100%;
+      height: 200px;
+      padding: 1rem;
+      font-size: 0.9rem;
+      border: none;
+      background: var(--card);
+      color: var(--text);
+      resize: vertical;
+      outline: none;
+      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      box-sizing: border-box;
+    }
+    
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      padding: 0.5rem;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+    }
+    
+    button {
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    button:hover {
+      background-color: #2a75e8;
+    }
+    
+    .output-container {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .help-text {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+    
+    pre.flowchart {
+      background-color: #f7f7f7;
+      padding: 1rem;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      overflow-x: auto;
+    }
+    
+    .latex-display {
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #3a86ff;
+        --background: #111;
+        --card: #1e1e1e;
+        --text: #eaeaea;
+        --border: #333;
+      }
+      
+      pre.flowchart {
+        background-color: #252525;
+      }
+    }
+    
+    @media (max-width: 600px) {
+      .container {
+        padding: 1rem;
+      }
+    }
+  </style>
+  
+  <!-- Load MathJax first for configuration -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true,
+        processEnvironments: true,
+        packages: {'[+]': ['ams']}
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+        ignoreHtmlClass: 'tex2jax_ignore',
+        processHtmlClass: 'tex2jax_process'
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  
+  <!-- Load Marked for Markdown processing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Renderer</h1>
+    </header>
+    
+    <div class="editor-container">
+      <div class="input-area">
+        <textarea id="inputMessage" placeholder="Type markdown, LaTeX ($...$ or $$...$$), and ASCII flowcharts (```flowchart...```)"></textarea>
+        <div class="actions">
+          <button id="renderBtn">Render</button>
+        </div>
+        <div class="help-text">
+          Supports Markdown, LaTeX ($inline$ or $$display$$), and ASCII flowcharts (```flowchart...```)
+        </div>
+      </div>
+      
+      <div class="output-container" id="output"></div>
+    </div>
+  </div>
+  
+  <script>
+    document.getElementById("renderBtn").addEventListener("click", function() {
+      renderContent();
+    });
+    
+    document.getElementById("inputMessage").addEventListener("keydown", function(e) {
+      if (e.ctrlKey && e.key === "Enter") {
+        renderContent();
+      }
+    });
+    
+    function renderContent() {
+      // Get input text
+      const inputText = document.getElementById("inputMessage").value;
+      const outputElement = document.getElementById("output");
+      
+      // Process the input in two stages:
+      // 1. First extract and save all LaTeX blocks
+      const latexBlocks = [];
+      
+      // Extract display math with \[ \] delimiters
+      let processedText = inputText.replace(/\\\[([\s\S]*?)\\\]/g, function(match, latex) {
+        const id = `LATEXDISPLAY${latexBlocks.length}`;
+        latexBlocks.push({ id, content: latex, display: true });
+        return id;
+      });
+      
+      // Extract display math with $$ $$ delimiters
+      processedText = processedText.replace(/\$\$([\s\S]*?)\$\$/g, function(match, latex) {
+        const id = `LATEXDISPLAY${latexBlocks.length}`;
+        latexBlocks.push({ id, content: latex, display: true });
+        return id;
+      });
+      
+      // Extract inline math with $ $ delimiters
+      // This regex is careful to not match single dollar signs used for currency
+      processedText = processedText.replace(/\$(\S[\s\S]*?\S)\$/g, function(match, latex) {
+        const id = `LATEXINLINE${latexBlocks.length}`;
+        latexBlocks.push({ id, content: latex, display: false });
+        return id;
+      });
+      
+      // 2. Process flowcharts
+      processedText = processedText.replace(/```(?:flowchart)?\s*([\s\S]*?)\s*```/g, function(match, content) {
+        return `<pre class="flowchart">${content.trim()}</pre>`;
+      });
+      
+      // 3. Process Markdown
+      const markedOptions = {
+        mangle: false,
+        headerIds: false,
+        breaks: true,
+        gfm: true
+      };
+      let htmlOutput = marked.parse(processedText, markedOptions);
+      
+      // 4. Restore LaTeX blocks
+      latexBlocks.forEach(block => {
+        if (block.display) {
+          htmlOutput = htmlOutput.replace(
+            block.id, 
+            `<div class="latex-display">\\[${block.content}\\]</div>`
+          );
+        } else {
+          htmlOutput = htmlOutput.replace(block.id, `\\(${block.content}\\)`);
+        }
+      });
+      
+      // Set the output
+      outputElement.innerHTML = htmlOutput;
+      
+      // Typeset LaTeX
+      if (window.MathJax) {
+        MathJax.typesetPromise([outputElement]).catch(function(err) {
+          console.error("MathJax typeset failed:", err);
+          outputElement.innerHTML += `<p style="color: red;">Error rendering LaTeX: ${err.message}</p>`;
+        });
+      }
+    }
+  </script>
+</body>
+</html>
