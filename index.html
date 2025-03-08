@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Markdown Renderer">
+  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzNhODZmZiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBzdHlsZT0iZm9udC1mYW1pbHk6IEFyaWFsOyBmb250LXNpemU6IDgwcHg7IGZpbGw6IHdoaXRlOyB0ZXh0LWFuY2hvcjogbWlkZGxlOyBkb21pbmFudC1iYXNlbGluZTogbWlkZGxlOyI+TWQ8L3RleHQ+PC9zdmc+">
   <title>Markdown, LaTeX, and Flowchart Renderer</title>
   <style>
     :root {
@@ -10,8 +14,11 @@
       --background: #fafafa;
       --card: #ffffff;
       --text: #333;
-      --border: #eaeaea;
-      --accent: #ff6b6b; /* Example accent color */
+      --border: #ddd; /* More subtle border */
+      --accent: #ff6b6b;
+      --button-bg: #f0f0f0; /* Light button background */
+      --button-hover-bg: #e0e0e0; /* Lighter hover background */
+      --button-text: var(--text);
     }
 
     body {
@@ -35,19 +42,19 @@
 
     header {
       margin-bottom: 2rem;
-      text-align: center; /* Center the header text */
+      text-align: center;
     }
 
     h1 {
-      font-size: 2rem; /* Increased font size for title */
-      font-weight: 700; /* Bolder font weight for title */
-      margin-bottom: 0.5rem; /* Add some space below title */
-      color: var(--primary); /* Use primary color for title */
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--primary);
     }
 
     .subtitle {
       font-size: 1rem;
-      color: #777; /* Slightly lighter color for subtitle */
+      color: #777;
       margin-top: 0;
     }
 
@@ -61,16 +68,16 @@
       position: relative;
       border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* More subtle shadow */
       background: var(--card);
-      border: 1px solid var(--border); /* Add border for better definition */
+      border: 1px solid var(--border);
     }
 
     textarea {
       width: 100%;
-      height: 250px; /* Increased textarea height */
+      height: 250px;
       padding: 1rem;
-      font-size: 1rem; /* Slightly larger font size in textarea */
+      font-size: 1rem;
       border: none;
       background: var(--card);
       color: var(--text);
@@ -78,33 +85,59 @@
       outline: none;
       font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
       box-sizing: border-box;
-      line-height: 1.6; /* Improved line height for readability */
+      line-height: 1.6;
     }
 
     .actions {
       display: flex;
-      justify-content: flex-end;
-      padding: 0.5rem 1rem; /* Added horizontal padding to actions */
+      justify-content: space-between;
+      padding: 0.5rem 1rem;
       background: var(--card);
       border-top: 1px solid var(--border);
-      border-bottom-left-radius: 8px; /* Match border radius */
-      border-bottom-right-radius: 8px; /* Match border radius */
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 0.5rem;
     }
 
     button {
-      padding: 0.75rem 1.5rem; /* Increased button padding */
-      font-size: 1rem; /* Larger button font size */
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 6px; /* Slightly more rounded buttons */
+      padding: 0.6rem 1.2rem; /* Slightly smaller padding */
+      font-size: 0.9rem; /* Slightly smaller font size */
+      background-color: var(--button-bg); /* Neutral background */
+      color: var(--button-text); /* Text color from variable */
+      border: 1px solid var(--border); /* Border from variable */
+      border-radius: 6px;
       cursor: pointer;
       transition: background-color 0.2s;
-      font-weight: 500; /* Slightly bolder button text */
+      font-weight: 500;
+      box-shadow: none; /* Remove default button shadow */
     }
 
     button:hover {
-      background-color: #2a75e8;
+      background-color: var(--button-hover-bg); /* Lighter hover color */
+    }
+
+    button.secondary {
+      background-color: var(--button-bg);
+      color: var(--button-text);
+      border: 1px solid var(--border);
+    }
+
+    button.secondary:hover {
+      background-color: var(--button-hover-bg);
+    }
+
+    button.clear {
+      background-color: var(--button-bg);
+      color: var(--button-text);
+      border: 1px solid var(--border);
+    }
+
+    button.clear:hover {
+      background-color: var(--button-hover-bg);
     }
 
     .output-container {
@@ -112,21 +145,75 @@
       border-radius: 8px;
       padding: 1.5rem;
       margin-top: 1.5rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      border: 1px solid var(--border); /* Add border for output container */
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* More subtle shadow */
+      border: 1px solid var(--border);
     }
+
 
     .help-text {
       font-size: 0.9rem;
       color: #666;
       margin-top: 0.5rem;
-      padding: 0 1rem 0.5rem 1rem; /* Added padding to help text */
-      display: block; /* Ensure help text takes full width */
+      padding: 0 1rem 0.5rem 1rem;
+      display: block;
     }
 
     .help-text strong {
-      color: var(--accent); /* Highlight important parts of help text */
+      color: var(--accent);
       font-weight: 600;
+    }
+
+    .flowchart-container {
+      margin: 1rem 0;
+      padding: 1rem;
+      background-color: #f8f8f8;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      overflow: auto;
+    }
+
+    .flowchart-container svg {
+      display: block;
+      margin: 0 auto;
+    }
+
+    .flowchart-node {
+      fill: white;
+      stroke: #666;
+      stroke-width: 2px;
+    }
+
+    .flowchart-node.start {
+      fill: #d4f7d4;
+    }
+
+    .flowchart-node.end {
+      fill: #f7d4d4;
+    }
+
+    .flowchart-node.operation {
+      fill: #d4e5f7;
+    }
+
+    .flowchart-node.condition {
+      fill: #f7f4d4;
+    }
+
+    .flowchart-text {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+
+    .flowchart-line {
+      stroke: #666;
+      stroke-width: 1.5px;
+      fill: none;
+    }
+
+    .flowchart-arrow {
+      fill: #666;
     }
 
     pre.flowchart {
@@ -136,7 +223,7 @@
       white-space: pre-wrap;
       font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
       overflow-x: auto;
-      border: 1px solid var(--border); /* Border for flowchart blocks */
+      border: 1px solid var(--border);
     }
 
     .latex-display {
@@ -144,7 +231,6 @@
       margin: 1rem 0;
     }
 
-    /* Example styles for inline code and links within markdown */
     .output-container code {
       background-color: #eee;
       color: #333;
@@ -164,7 +250,6 @@
       text-decoration: underline;
     }
 
-
     @media (prefers-color-scheme: dark) {
       :root {
         --primary: #3a86ff;
@@ -172,17 +257,38 @@
         --card: #1e1e1e;
         --text: #eaeaea;
         --border: #333;
-        --accent: #ff8a8a; /* Dark mode accent color */
+        --accent: #ff8a8a;
+        --button-bg: #2a2a2a; /* Dark button background */
+        --button-hover-bg: #383838; /* Darker hover background */
+        --button-text: var(--text);
       }
 
       pre.flowchart {
         background-color: #252525;
-        border: 1px solid var(--border); /* Border in dark mode too */
+        border: 1px solid var(--border);
       }
       .output-container code {
         background-color: #333;
         color: #eee;
       }
+      button.secondary {
+        background-color: var(--button-bg);
+        color: var(--button-text);
+        border: 1px solid var(--border);
+      }
+      button.secondary:hover {
+        background-color: var(--button-hover-bg);
+      }
+
+      button.clear {
+        background-color: var(--button-bg);
+        color: var(--button-text);
+        border: 1px solid var(--border);
+      }
+      button.clear:hover {
+        background-color: var(--button-hover-bg);
+      }
+
     }
 
     @media (max-width: 600px) {
@@ -211,14 +317,115 @@
         font-size: 0.8rem;
         padding: 0 0.75rem 0.5rem 0.75rem;
       }
+      .actions {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .button-group {
+        justify-content: space-between;
+      }
     }
+
+    /* Enhanced Print-Specific Styles (Option 3) */
+    @media print {
+      /* Print-specific styles */
+      body {
+        background-color: white !important;
+        color: black !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .container {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      .input-area, .button-group, .actions, .export-dropdown, button, .help-text {
+        display: none !important;
+      }
+
+      .output-container {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      header {
+        text-align: left !important;
+        margin-bottom: 1cm !important;
+      }
+
+      header h1 {
+        color: black !important;
+        font-size: 24pt !important;
+        margin-bottom: 0.5cm !important;
+      }
+
+      header .subtitle {
+        font-size: 12pt !important;
+        color: #555 !important;
+      }
+
+      .latex-display {
+        page-break-inside: avoid;
+        margin: 1cm 0 !important;
+        text-align: center;
+      }
+
+      .flowchart-container {
+        page-break-inside: avoid;
+        background: white !important;
+        border: 1px solid #ddd !important;
+        padding: 0.5cm !important;
+        margin: 1cm 0 !important;
+      }
+
+      pre, code {
+        background-color: #f0f0f0 !important;
+        color: black !important;
+        border: 1px solid #ccc !important;
+        padding: 0.2cm 0.5cm !important;
+        border-radius: 3px !important;
+        font-size: 10pt !important;
+      }
+      pre.flowchart {
+        white-space: pre-wrap !important;
+      }
+
+      ul, ol {
+        margin-left: 20px !important;
+      }
+      li {
+        margin-bottom: 0.2cm !important;
+      }
+
+      a {
+        color: blue !important;
+        text-decoration: none !important;
+      }
+
+      @page {
+        size: A4;
+        margin: 1.5cm;
+      }
+
+      hr {
+        border: none;
+        border-top: 1px solid #ccc;
+        margin: 1cm 0;
+        page-break-after: avoid;
+      }
+    }
+
   </style>
 
-  <!-- Load MathJax first for configuration -->
   <script>
     window.MathJax = {
       tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']], /* Added \( \) for inline math */
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
         displayMath: [['$$', '$$'], ['\\[', '\\]']],
         processEscapes: true,
         processEnvironments: true,
@@ -232,9 +439,9 @@
     };
   </script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
-
-  <!-- Load Marked for Markdown processing -->
   <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.17.1/flowchart.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -263,7 +470,7 @@ $$
 Binomial coefficient: $C(n, k) = \frac{n!}{k!(n-k)!}$ which is rendered as $C(n, k) = \binom{n}{k}$.
 
 Flowchart:
-\`\`\`flowchart
+```flowchart
 st=>start: Start
 op=>operation: Your Operation
 cond=>condition: Yes or No?
@@ -272,13 +479,17 @@ e=>end: End
 st->op->cond
 cond(yes)->e
 cond(no)->op
-\`\`\`
+```
         </textarea>
         <div class="actions">
-          <button id="renderBtn">Render Content</button>
+          <div class="button-group">
+            <button id="renderBtn">Render Content</button>
+            <button id="clearBtn" class="clear">Clear</button>
+            <button id="printPDFBtn" class="export">Export to PDF</button> <!-- Renamed and restyled button -->
+          </div>
         </div>
         <div class="help-text">
-          Supports <strong>Markdown</strong>, <strong>LaTeX</strong> (inline: <code>$...$</code> or <code>\(...\)</code>, display: <code>$$...$$</code> or <code>\[...\]</code>, and binomial coefficients: <code>C(n, k)</code>), and <strong>ASCII flowcharts</strong> (using <code>\`\`\`flowchart</code> ... <code>\`\`\`</code> blocks). Press <strong>Ctrl+Enter</strong> to render quickly.
+          Supports <strong>Markdown</strong>, <strong>LaTeX</strong> (inline: <code>$...$</code> or <code>\(...\)</code>, display: <code>$$...$$</code> or <code>\[...\]</code>, and binomial coefficients: <code>C(n, k)</code>), and <strong>ASCII flowcharts</strong> (using <code>```flowchart</code> ... <code>```</code> blocks). Press <strong>Ctrl+Enter</strong> to render quickly. To save as PDF, click "<strong>Export to PDF</strong>," then select "Save as PDF" in the print dialog of your browser.
         </div>
       </div>
 
@@ -293,59 +504,59 @@ cond(no)->op
       renderContent();
     });
 
+    document.getElementById("clearBtn").addEventListener("click", function() {
+      document.getElementById("inputMessage").value = "";
+      document.getElementById("output").innerHTML = "<p>Content cleared. Render new content when ready.</p>";
+    });
+
     document.getElementById("inputMessage").addEventListener("keydown", function(e) {
       if (e.ctrlKey && e.key === "Enter") {
         renderContent();
-        e.preventDefault(); // Prevent default action (like adding a newline)
+        e.preventDefault();
       }
     });
 
+    document.getElementById("printPDFBtn").addEventListener("click", printToPDF); // Correct button ID
+
+
     function renderContent() {
-      // Get input text
       let inputText = document.getElementById("inputMessage").value;
       const outputElement = document.getElementById("output");
 
-      // 0. Pre-process C(n, k) for LaTeX binomial coefficient notation
       inputText = inputText.replace(/C\(([^,]+),\s*([^)]+)\)/g, '\\binom{$1}{$2}');
 
-      // 1. First extract and save all LaTeX blocks
       const latexBlocks = [];
-
-      // Extract display math with \[ \] delimiters
       let processedText = inputText.replace(/\\\[([\s\S]*?)\\\]/g, function(match, latex) {
         const id = `LATEXDISPLAY${latexBlocks.length}`;
         latexBlocks.push({ id, content: latex, display: true });
         return id;
       });
 
-      // Extract display math with $$ $$ delimiters
       processedText = processedText.replace(/\$\$([\s\S]*?)\$\$/g, function(match, latex) {
         const id = `LATEXDISPLAY${latexBlocks.length}`;
         latexBlocks.push({ id, content: latex, display: true });
         return id;
       });
 
-      // Extract inline math with \( \) delimiters
       processedText = processedText.replace(/\\\(([\s\S]*?)\\\)/g, function(match, latex) {
         const id = `LATEXINLINE${latexBlocks.length}`;
         latexBlocks.push({ id, content: latex, display: false });
         return id;
       });
 
-      // Extract inline math with $ $ delimiters
-      // This regex is careful to not match single dollar signs used for currency
       processedText = processedText.replace(/\$(\S[\s\S]*?\S)\$/g, function(match, latex) {
         const id = `LATEXINLINE${latexBlocks.length}`;
         latexBlocks.push({ id, content: latex, display: false });
         return id;
       });
 
-      // 2. Process flowcharts
+      const flowchartBlocks = [];
       processedText = processedText.replace(/```(?:flowchart)?\s*([\s\S]*?)\s*```/g, function(match, content) {
-        return `<pre class="flowchart">${content.trim()}</pre>`;
+        const id = `FLOWCHART${flowchartBlocks.length}`;
+        flowchartBlocks.push({ id, content: content.trim() });
+        return id;
       });
 
-      // 3. Process Markdown
       const markedOptions = {
         mangle: false,
         headerIds: false,
@@ -354,7 +565,6 @@ cond(no)->op
       };
       let htmlOutput = marked.parse(processedText, markedOptions);
 
-      // 4. Restore LaTeX blocks
       latexBlocks.forEach(block => {
         if (block.display) {
           htmlOutput = htmlOutput.replace(
@@ -366,21 +576,102 @@ cond(no)->op
         }
       });
 
-      // Set the output
+      flowchartBlocks.forEach(block => {
+        const containerId = `flowchart-container-${block.id}`;
+        htmlOutput = htmlOutput.replace(
+          block.id,
+          `<div id="${containerId}" class="flowchart-container" data-flowchart="${encodeURIComponent(block.content)}"></div>`
+        );
+      });
+
       outputElement.innerHTML = htmlOutput;
 
-      // Typeset LaTeX
       if (window.MathJax) {
         MathJax.typesetPromise([outputElement]).catch(function(err) {
           console.error("MathJax typeset failed:", err);
           outputElement.innerHTML += `<p style="color: red;">Error rendering LaTeX: ${err.message}</p>`;
         });
       }
+
+      renderFlowcharts();
     }
 
-    // Set initial example content in textarea on page load
+    function renderFlowcharts() {
+      const containers = document.querySelectorAll('.flowchart-container');
+      containers.forEach(container => {
+        const flowchartContent = decodeURIComponent(container.getAttribute('data-flowchart'));
+        try {
+          const diagram = flowchart.parse(flowchartContent);
+          container.innerHTML = '';
+          diagram.drawSVG(container, {
+            'line-width': 2,
+            'line-length': 50,
+            'text-margin': 10,
+            'font-size': 14,
+            'font-color': getComputedStyle(document.documentElement).getPropertyValue('--text').trim(),
+            'line-color': '#666',
+            'element-color': '#666',
+            'fill': 'white',
+            'yes-text': 'yes',
+            'no-text': 'no',
+            'arrow-end': 'block',
+            'scale': 1,
+            'symbols': {
+              'start': { 'font-color': 'black', 'element-color': 'black', 'fill': '#d4f7d4' },
+              'end': { 'font-color': 'black', 'element-color': 'black', 'fill': '#f7d4d4' },
+              'operation': { 'font-color': 'black', 'element-color': 'black', 'fill': '#d4e5f7' },
+              'condition': { 'font-color': 'black', 'element-color': 'black', 'fill': '#f7f4d4' }
+            }
+          });
+        } catch (error) {
+          console.error("Error rendering flowchart:", error);
+          container.innerHTML = `<pre class="flowchart">${flowchartContent}</pre><p style="color: red;">Error rendering flowchart: ${error.message}</p>`;
+        }
+      });
+    }
+
+
+    function printToPDF() {
+      const outputElement = document.getElementById("output");
+
+      if (outputElement.innerHTML.trim() === "") {
+        alert("Please render content before printing.");
+        return;
+      }
+
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Export to PDF</title>
+            <style>
+              /* Basic styles */
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                color: #333;
+              }
+            </style>
+            <link rel="stylesheet" href="style.css" media="print">
+          </head>
+          <body>
+            ${outputElement.innerHTML}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      alert("For best results, use your browser's 'Print' function (Ctrl+P or Cmd+P) and choose 'Save as PDF' as the destination in the print dialog.");
+      setTimeout(() => {
+        printWindow.print();
+      }, 500);
+    }
+
+
     document.addEventListener('DOMContentLoaded', function() {
-      renderContent(); // Render initial content on load
+      renderContent();
+      if (window.navigator.standalone) {
+        document.body.classList.add('standalone-mode');
+      }
     });
   </script>
 </body>
