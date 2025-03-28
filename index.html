@@ -1,678 +1,1391 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru"> <!-- Changed lang to Russian -->
 <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Markdown Renderer">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzNhODZmZiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBzdHlsZT0iZm9udC1mYW1pbHk6IEFyaWFsOyBmb250LXNpemU6IDgwcHg7IGZpbGw6IHdoaXRlOyB0ZXh0LWFuY2hvcjogbWlkZGxlOyBkb21pbmFudC1iYXNlbGluZTogbWlkZGxlOyI+TWQ8L3RleHQ+PC9zdmc+">
-  <title>Markdown, LaTeX, and Flowchart Renderer</title>
+
+  <!-- Import Fonts: Inter for UI, Fira Code for Code/Textarea -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <title>Markdown, LaTeX и Flowchart Рендерер</title> <!-- Updated Title -->
   <style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Fira+Code:wght@400;500&display=swap'); /* Changed sans font */
+
+ :root {
+   /* === Retro Hardware Palette (Dark Default) === */
+   --panel-bg: hsl(30, 8%, 18%); /* Dark desaturated brown/charcoal */
+   --panel-bg-texture: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); /* Subtle grid texture */
+   --panel-bg-size: 3px 3px; /* Texture size */
+   --panel-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E"); /* Subtle noise SVG */
+
+   --text-main: hsl(35, 15%, 85%); /* Off-white / light beige */
+   --text-secondary: hsl(35, 10%, 65%); /* Slightly darker beige */
+   --text-label: hsl(35, 15%, 75%); /* For labels, slightly dimmer */
+
+   --accent-hue: 35; /* Warm Orange/Amber */
+   --accent-saturation: 90%;
+   --accent-lightness: 60%;
+   --accent: hsl(var(--accent-hue), var(--accent-saturation), var(--accent-lightness)); /* #f5a623 */
+   --accent-dark: hsl(var(--accent-hue), var(--accent-saturation), 50%); /* #d98a0d */
+   --accent-glow: hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.5);
+   --accent-glow-strong: hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.7);
+
+   --control-bg: hsl(0, 0%, 30%); /* Darker grey for button/knob base */
+   --control-bevel-light: hsla(0, 0%, 60%, 0.5); /* Highlight for bevel */
+   --control-bevel-dark: hsla(0, 0%, 10%, 0.6); /* Shadow for bevel */
+   --control-inset-shadow: hsla(0, 0%, 5%, 0.5); /* Inner shadow for pressed state */
+
+   --border-color: hsl(30, 8%, 25%); /* Border slightly lighter than panel */
+   --border-color-light: hsl(30, 8%, 40%); /* Lighter border for hover/focus */
+
+   --shadow-color-rgb: 0, 0%, 0%; /* Black base for shadows */
+   --shadow-strength-md: 0.5;
+   --shadow-strength-lg: 0.6;
+
+   /* === Semantic Variables (Defaults to Dark Retro) === */
+   --background: var(--panel-bg);
+   --card: hsl(30, 8%, 22%); /* Slightly lighter card bg */
+   --text: var(--text-main);
+   --text-secondary: var(--text-secondary);
+   --border: var(--border-color);
+   --button-bg: var(--control-bg);
+   --button-hover-bg: hsl(0, 0%, 35%);
+   --button-text: var(--text-main);
+   --code-bg: hsl(30, 8%, 15%); /* Slightly darker for code */
+   --code-text: var(--text-label);
+   --pre-bg: var(--code-bg);
+   --focus-ring-color: var(--accent-glow);
+
+   /* === Typography === */
+   --font-sans: 'Roboto Condensed', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif; /* More condensed font */
+   --font-mono: 'Fira Code', 'Cascadia Code', 'Menlo', 'Monaco', 'Courier New', monospace;
+   --base-font-size: 16px;
+   --line-height-base: 1.6;
+   --line-height-code: 1.7;
+
+   /* === Sizing & Spacing === */
+   --container-width: 900px;
+   --border-radius-sm: 3px; /* Sharper radii */
+   --border-radius-md: 5px;
+   --border-radius-lg: 8px;
+   --spacing-unit: 0.25rem; /* 4px */
+
+   /* === Transitions & Shadows (Retro Style) === */
+   --transition-speed: 0.15s; /* Slightly faster */
+   --transition-ease: ease-out;
+   /* Simulating depth */
+   --shadow-panel:
+     inset 0 1px 0 hsla(0, 0%, 100%, 0.03), /* Subtle top highlight */
+     0 2px 3px 1px hsla(var(--shadow-color-rgb), 0.3), /* Main drop shadow */
+     0 0 0 1px hsla(var(--shadow-color-rgb), 0.2); /* Thin edge */
+   --shadow-control-raised: /* For buttons/knobs */
+     /* Bevel */
+     inset 1px 1px 1px var(--control-bevel-light),
+     inset -1px -1px 1px var(--control-bevel-dark),
+     /* Drop Shadow */
+     1px 2px 3px 1px hsla(var(--shadow-color-rgb), var(--shadow-strength-md));
+   --shadow-control-pressed: /* For active/pressed buttons */
+     /* Inset shadow */
+     inset 2px 2px 4px 1px var(--control-inset-shadow),
+     /* Reversed subtle bevel */
+     inset -0.5px -0.5px 0.5px var(--control-bevel-light),
+     inset 0.5px 0.5px 0.5px var(--control-bevel-dark);
+    --shadow-glow: 0 0 8px 2px var(--accent-glow);
+    --shadow-glow-strong: 0 0 12px 4px var(--accent-glow-strong);
+
+    /* Specific shadows for consistency (based on md/lg from original) */
+    --shadow-md: 0 4px 6px -1px hsla(var(--shadow-color-rgb), 0.4), 0 2px 4px -2px hsla(var(--shadow-color-rgb), 0.4);
+    --shadow-lg: 0 10px 15px -3px hsla(var(--shadow-color-rgb), 0.5), 0 4px 6px -4px hsla(var(--shadow-color-rgb), 0.5);
+ }
+
+ /* === Optional Light Hardware Mode (Less common, but possible) === */
+ /* You might need to adjust significantly for a believable light hardware look */
+ @media (prefers-color-scheme: light) {
+   :root {
+     /* Example: Light metal panel */
+     --panel-bg: hsl(30, 10%, 85%); /* Light grey/beige */
+     --panel-bg-texture: linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+     --panel-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+
+     --text-main: hsl(30, 10%, 20%); /* Dark text */
+     --text-secondary: hsl(30, 8%, 40%);
+     --text-label: hsl(30, 10%, 30%);
+
+     --accent-hue: 35;
+     --accent-saturation: 100%; /* Keep orange vibrant */
+     --accent-lightness: 55%;
+     --accent: hsl(var(--accent-hue), var(--accent-saturation), var(--accent-lightness));
+     --accent-dark: hsl(var(--accent-hue), var(--accent-saturation), 45%);
+     --accent-glow: hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.6);
+     --accent-glow-strong: hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.8);
+
+     --control-bg: hsl(0, 0%, 92%); /* Light grey control */
+     --control-bevel-light: hsla(0, 0%, 100%, 0.7);
+     --control-bevel-dark: hsla(0, 0%, 60%, 0.5);
+     --control-inset-shadow: hsla(0, 0%, 70%, 0.6);
+
+     --border-color: hsl(30, 10%, 75%);
+     --border-color-light: hsl(30, 10%, 65%);
+
+     --shadow-color-rgb: 30, 10%, 40%; /* Shadow base color for light mode */
+     --shadow-strength-md: 0.15;
+     --shadow-strength-lg: 0.2;
+
+     /* Semantic mapping */
+     --background: var(--panel-bg);
+     --card: hsl(30, 10%, 90%);
+     --text: var(--text-main);
+     --text-secondary: var(--text-secondary);
+     --border: var(--border-color);
+     --button-bg: var(--control-bg);
+     --button-hover-bg: hsl(0, 0%, 95%);
+     --button-text: var(--text-main);
+     --code-bg: hsl(30, 10%, 95%);
+     --code-text: var(--text-label);
+     --pre-bg: var(--code-bg);
+     --focus-ring-color: var(--accent-glow);
+
+     /* Adjust shadows for light mode */
+     --shadow-panel:
+       inset 0 1px 0 hsla(0, 0%, 0%, 0.03),
+       0 2px 3px 1px hsla(var(--shadow-color-rgb), 0.2),
+       0 0 0 1px hsla(var(--shadow-color-rgb), 0.1);
+      --shadow-control-raised:
+        inset 1px 1px 1px var(--control-bevel-light),
+        inset -1px -1px 1px var(--control-bevel-dark),
+        1px 2px 3px 1px hsla(var(--shadow-color-rgb), var(--shadow-strength-md));
+      --shadow-control-pressed:
+        inset 2px 2px 4px 1px var(--control-inset-shadow),
+        inset -0.5px -0.5px 0.5px var(--control-bevel-light),
+        inset 0.5px 0.5px 0.5px var(--control-bevel-dark);
+
+     --shadow-md: 0 4px 6px -1px hsla(var(--shadow-color-rgb), 0.1), 0 2px 4px -2px hsla(var(--shadow-color-rgb), 0.1);
+     --shadow-lg: 0 10px 15px -3px hsla(var(--shadow-color-rgb), 0.1), 0 4px 6px -4px hsla(var(--shadow-color-rgb), 0.1);
+   }
+ }
+
+ /* === Base Styles === */
+ *, *::before, *::after { box-sizing: border-box; }
+
+ html {
+   font-size: var(--base-font-size);
+   scroll-behavior: smooth;
+   -webkit-text-size-adjust: 100%;
+ }
+
+ body {
+   font-family: var(--font-sans);
+   margin: 0;
+   padding: 0;
+   background-color: var(--background);
+   /* Apply texture & noise */
+   background-image: var(--panel-noise), var(--panel-bg-texture);
+   background-size: auto, var(--panel-bg-size);
+   color: var(--text);
+   display: flex;
+   flex-direction: column;
+   min-height: 100vh;
+   line-height: var(--line-height-base);
+   -webkit-font-smoothing: antialiased;
+   -moz-osx-font-smoothing: grayscale;
+ }
+
+ /* === Container === */
+ .container {
+   max-width: var(--container-width);
+   margin: 0 auto;
+   padding: calc(var(--spacing-unit) * 10) calc(var(--spacing-unit) * 6); /* 40px 24px */
+   width: 100%;
+ }
+
+ /* === Header === */
+ header {
+   margin-bottom: calc(var(--spacing-unit) * 10); /* 40px */
+   text-align: center;
+   text-shadow: 0 1px 1px hsla(var(--shadow-color-rgb), 0.3); /* Subtle text shadow */
+ }
+
+ h1 {
+   font-size: clamp(1.8rem, 5vw, 2.5rem);
+   font-weight: 700;
+   margin: 0 0 calc(var(--spacing-unit) * 2) 0;
+   color: var(--accent); /* Use accent for main title */
+   letter-spacing: 0.02em; /* Slightly wider */
+   text-transform: uppercase; /* Common in hardware */
+ }
+
+ .subtitle {
+   font-size: clamp(1rem, 3vw, 1.1rem); /* Slightly smaller */
+   color: var(--text-secondary);
+   margin: 0;
+   font-weight: 400;
+ }
+
+ /* === Editor Area (Recessed Panel Look) === */
+ .editor-container {
+   display: flex;
+   flex-direction: column;
+   gap: calc(var(--spacing-unit) * 8); /* 32px */
+ }
+
+ .input-area {
+   position: relative;
+   border-radius: var(--border-radius-lg);
+   overflow: hidden; /* Needed for inset shadows */
+   background: var(--panel-bg); /* Match main panel */
+   border: 1px solid var(--border-color);
+   box-shadow: var(--shadow-panel), /* Panel shadow */
+               inset 0 2px 5px hsla(var(--shadow-color-rgb), 0.3); /* Inner recess shadow */
+   transition: border-color var(--transition-speed) var(--transition-ease),
+               box-shadow var(--transition-speed) var(--transition-ease);
+ }
+
+ .input-area:focus-within {
+   border-color: var(--accent-dark);
+   box-shadow: var(--shadow-panel),
+               inset 0 2px 5px hsla(var(--shadow-color-rgb), 0.3),
+               0 0 0 2px var(--accent-glow); /* Glow focus */
+ }
+
+ textarea {
+   width: 100%;
+   min-height: 350px;
+   height: 40vh;
+   padding: calc(var(--spacing-unit) * 5); /* 20px */
+   font-size: 0.95rem;
+   border: none;
+   background: var(--card); /* Slightly different bg for text area */
+   color: var(--text);
+   resize: vertical;
+   outline: none;
+   font-family: var(--font-mono);
+   line-height: var(--line-height-code);
+   display: block;
+   border-radius: var(--border-radius-sm); /* Inner radius */
+   margin: calc(var(--spacing-unit) * 2); /* Inset the textarea slightly */
+   width: calc(100% - var(--spacing-unit) * 4);
+   box-shadow: inset 0 1px 3px hsla(var(--shadow-color-rgb), 0.4); /* Inner shadow for textarea */
+   font-variant-ligatures: contextual common-ligatures discretionary-ligatures historical-ligatures;
+   -webkit-font-feature-settings: "liga" 1, "calt" 1, "dlig" 1, "hist" 1;
+   font-feature-settings: "liga" 1, "calt" 1, "dlig" 1, "hist" 1;
+ }
+
+ /* === Actions Bar === */
+ .actions {
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: space-between;
+   align-items: center;
+   gap: calc(var(--spacing-unit) * 4);
+   padding: calc(var(--spacing-unit) * 3) calc(var(--spacing-unit) * 5);
+   background: transparent; /* Let panel show through */
+   border-top: 1px solid var(--border-color);
+   /* No specific rounding needed as it's inside .input-area */
+ }
+
+ .button-group {
+   display: flex;
+   flex-wrap: wrap;
+   gap: calc(var(--spacing-unit) * 3);
+ }
+
+ /* === Buttons (Hardware Style) === */
+ button {
+   padding: calc(var(--spacing-unit) * 2.5) calc(var(--spacing-unit) * 5); /* 10px 20px */
+   font-size: 0.85rem; /* Slightly smaller text */
+   font-family: var(--font-sans);
+   font-weight: 700; /* Bold */
+   text-transform: uppercase; /* Uppercase Labels */
+   background-color: var(--button-bg);
+   background-image: linear-gradient(to bottom, hsla(0,0%,100%,0.05), hsla(0,0%,0%,0.05)); /* Subtle gradient */
+   color: var(--button-text);
+   border: 1px solid hsla(0, 0%, 10%, 0.8); /* Darker border */
+   border-top-color: hsla(0, 0%, 40%, 0.7); /* Slightly lighter top border */
+   border-radius: var(--border-radius-md);
+   cursor: pointer;
+   transition: background-color var(--transition-speed) var(--transition-ease),
+               box-shadow var(--transition-speed) var(--transition-ease),
+               transform var(--transition-speed) var(--transition-ease);
+   box-shadow: var(--shadow-control-raised);
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   text-align: center;
+   white-space: nowrap;
+   letter-spacing: 0.05em;
+   text-shadow: 0 1px 1px hsla(var(--shadow-color-rgb), 0.3);
+ }
+
+ button:hover {
+   background-color: var(--button-hover-bg);
+   border-color: hsla(0, 0%, 15%, 0.9);
+   border-top-color: hsla(0, 0%, 50%, 0.8);
+   transform: translateY(-1px); /* Lift slightly */
+   box-shadow: /* Taller Bevel */
+     inset 1px 1px 1px var(--control-bevel-light),
+     inset -1px -1px 1px var(--control-bevel-dark),
+     /* Stronger Drop Shadow */
+     1px 3px 5px 2px hsla(var(--shadow-color-rgb), calc(var(--shadow-strength-md) + 0.1));
+ }
+
+ /* Focus state with glow */
+ button:focus-visible {
+   outline: none; /* Remove default outline */
+   box-shadow: var(--shadow-control-raised), var(--shadow-glow);
+ }
+ /* Fallback */
+ button:focus {
+   outline: none;
+   box-shadow: var(--shadow-control-raised), var(--shadow-glow);
+ }
+ button::-moz-focus-inner { border-style: none; }
+
+ button:active {
+   background-color: var(--button-bg); /* Revert bg */
+   transform: translateY(1px); /* Push down */
+   box-shadow: var(--shadow-control-pressed); /* Pressed shadow */
+   transition-duration: 0.05s; /* Faster transition on active */
+ }
+
+ /* Primary Button (Lit Button Look) */
+ button#renderBtn {
+   background-color: var(--accent-dark); /* Darker orange base */
+   background-image: linear-gradient(to bottom, var(--accent), var(--accent-dark));
+   color: hsl(var(--accent-hue), 15%, 15%); /* Dark text for contrast */
+   border-color: hsla(var(--accent-hue), 70%, 30%, 0.8);
+   border-top-color: hsla(var(--accent-hue), 80%, 65%, 0.7);
+   text-shadow: 0 1px 0px hsla(0, 0%, 100%, 0.2); /* Light text shadow */
+   box-shadow: var(--shadow-control-raised), var(--shadow-glow); /* Add glow */
+ }
+
+ button#renderBtn:hover {
+   background-color: var(--accent);
+   background-image: linear-gradient(to bottom, hsl(var(--accent-hue), var(--accent-saturation), 65%), var(--accent));
+   border-color: hsla(var(--accent-hue), 70%, 35%, 0.9);
+   border-top-color: hsla(var(--accent-hue), 80%, 70%, 0.8);
+   box-shadow: var(--shadow-control-raised), var(--shadow-glow-strong); /* Brighter glow on hover */
+   transform: translateY(-1px);
+ }
+
+ button#renderBtn:focus-visible {
+   box-shadow: var(--shadow-control-raised), var(--shadow-glow-strong);
+ }
+ button#renderBtn:focus {
+    box-shadow: var(--shadow-control-raised), var(--shadow-glow-strong);
+ }
+
+ button#renderBtn:active {
+   background-color: var(--accent-dark);
+   background-image: linear-gradient(to top, var(--accent), var(--accent-dark)); /* Reverse gradient */
+   box-shadow: var(--shadow-control-pressed), /* Pressed shadow */
+               inset 0 0 8px hsla(var(--accent-hue), 90%, 30%, 0.5); /* Inner accent glow */
+   transform: translateY(1px);
+ }
+
+ /* === Help Text === */
+ .help-text {
+   font-size: 0.8rem; /* Smaller */
+   color: var(--text-secondary);
+   padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 5) calc(var(--spacing-unit) * 3);
+   line-height: 1.5;
+   margin: 0;
+   border-top: 1px solid var(--border);
+   background: hsla(0, 0%, 0%, 0.1); /* Slightly darker bg */
+   text-shadow: 0 1px 0px hsla(0, 0%, 100%, 0.05); /* Subtle light shadow */
+ }
+
+ .help-text strong {
+   color: var(--accent);
+   font-weight: 700;
+ }
+
+ .help-text code {
+   font-size: 0.75rem;
+   padding: calc(var(--spacing-unit) * 0.5) calc(var(--spacing-unit) * 1.5);
+   background-color: var(--code-bg);
+   border-radius: var(--border-radius-sm);
+   border: 1px solid var(--border);
+   color: var(--code-text);
+   font-family: var(--font-mono);
+   vertical-align: middle;
+   box-shadow: inset 0 1px 2px hsla(var(--shadow-color-rgb), 0.3);
+ }
+
+ /* === Output Area (Screen/Display Look) === */
+ .output-container {
+   background: var(--card); /* Slightly lighter than main panel */
+   border-radius: var(--border-radius-lg);
+   padding: calc(var(--spacing-unit) * 8); /* 32px */
+   border: 1px solid var(--border-color);
+   box-shadow: var(--shadow-panel), /* Panel shadow */
+               inset 0 3px 6px hsla(var(--shadow-color-rgb), 0.4); /* Deeper inset shadow */
+   min-height: 150px;
+   overflow-wrap: break-word;
+   word-wrap: break-word;
+   -webkit-hyphens: auto;
+   -moz-hyphens: auto;
+   hyphens: auto;
+   color: var(--text); /* Ensure text color contrast */
+ }
+
+ .output-container > * { margin-block-start: 0; margin-block-end: 1.2em; }
+ .output-container > *:last-child { margin-block-end: 0; }
+
+ /* === Rendered Content Styling (Retro Display) === */
+ .output-container h1,
+ .output-container h2,
+ .output-container h3,
+ .output-container h4,
+ .output-container h5,
+ .output-container h6 {
+   margin-block-start: 1.8em;
+   margin-block-end: 0.8em;
+   font-weight: 700; /* Bold headings */
+   line-height: 1.3;
+   letter-spacing: 0.01em;
+   color: var(--text-main); /* Ensure main text color */
+   text-shadow: 0 1px 1px hsla(var(--shadow-color-rgb), 0.2);
+ }
+
+ .output-container h1 { font-size: 1.8em; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; color: var(--accent); }
+ .output-container h2 { font-size: 1.5em; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
+ .output-container h3 { font-size: 1.25em; text-transform: uppercase; color: var(--text-label); }
+ .output-container h4 { font-size: 1.1em; }
+ .output-container h5 { font-size: 1em; font-style: italic; color: var(--text-secondary); }
+ .output-container h6 { font-size: 0.9em; color: var(--text-secondary); text-transform: uppercase; }
+
+ .output-container p { color: var(--text); } /* Slightly brighter text for paragraphs */
+
+ .output-container ul,
+ .output-container ol { padding-left: 2em; }
+ .output-container li { margin-block-end: 0.5em; }
+ .output-container ul li::marker { color: var(--accent); }
+ .output-container ol li::marker { color: var(--accent); font-weight: 700; }
+
+ .output-container blockquote {
+   margin-left: 0; margin-right: 0;
+   padding: calc(var(--spacing-unit) * 3) calc(var(--spacing-unit) * 5);
+   border-left: 3px solid var(--accent);
+   background-color: hsla(var(--accent-hue), 20%, 25%, 0.2); /* Dim accent bg */
+   color: var(--text-secondary);
+   font-style: italic;
+   border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+   box-shadow: inset 2px 0 5px hsla(var(--shadow-color-rgb), 0.1);
+ }
+ .output-container blockquote > *:first-child { margin-block-start: 0; }
+ .output-container blockquote > *:last-child { margin-block-end: 0; }
+
+ /* Inline Code */
+ .output-container code {
+   font-family: var(--font-mono);
+   background-color: var(--code-bg);
+   color: var(--code-text);
+   padding: calc(var(--spacing-unit) * 0.5) calc(var(--spacing-unit) * 1.5);
+   border-radius: var(--border-radius-sm);
+   border: 1px solid var(--border);
+   font-size: 0.85em; /* Slightly smaller */
+   vertical-align: baseline;
+   box-shadow: inset 0 1px 2px hsla(var(--shadow-color-rgb), 0.3);
+   font-variant-ligatures: none;
+   -webkit-font-feature-settings: "liga" 0, "calt" 0;
+   font-feature-settings: "liga" 0, "calt" 0;
+ }
+
+ /* Code Blocks */
+ .output-container pre {
+   font-family: var(--font-mono);
+   background-color: var(--pre-bg);
+   border: 1px solid var(--border);
+   padding: calc(var(--spacing-unit) * 4);
+   border-radius: var(--border-radius-md);
+   overflow-x: auto;
+   line-height: var(--line-height-code);
+   font-size: 0.85rem; /* Slightly smaller */
+   color: var(--text-label);
+   box-shadow: inset 0 2px 5px hsla(var(--shadow-color-rgb), 0.4); /* Deeper inset */
+   font-variant-ligatures: contextual common-ligatures discretionary-ligatures historical-ligatures;
+   -webkit-font-feature-settings: "liga" 1, "calt" 1, "dlig" 1, "hist" 1;
+   font-feature-settings: "liga" 1, "calt" 1, "dlig" 1, "hist" 1;
+ }
+ .output-container pre code {
+   background-color: transparent;
+   padding: 0;
+   font-size: inherit;
+   color: inherit;
+   border-radius: 0;
+   vertical-align: unset;
+   border: none;
+   box-shadow: none;
+   font-variant-ligatures: inherit;
+   -webkit-font-feature-settings: inherit;
+   font-feature-settings: inherit;
+ }
+
+ /* Tables */
+ .output-container table {
+   width: auto; max-width: 100%;
+   border-collapse: separate;
+   border-spacing: 0;
+   border: 1px solid var(--border);
+   border-radius: var(--border-radius-md);
+   overflow: hidden;
+   margin-block-end: 1.5em;
+   box-shadow: var(--shadow-md);
+ }
+ .output-container th,
+ .output-container td {
+   border-bottom: 1px solid var(--border);
+   padding: calc(var(--spacing-unit) * 2.5) calc(var(--spacing-unit) * 4);
+   text-align: left; vertical-align: top;
+   color: var(--text-label); /* Dimmer text in tables */
+ }
+ .output-container td { border-left: 1px solid var(--border); }
+ .output-container th:first-child,
+ .output-container td:first-child { border-left: none; }
+ .output-container tr:last-child td { border-bottom: none; }
+
+ .output-container thead th {
+   background-color: hsla(0, 0%, 0%, 0.15); /* Darker header */
+   font-weight: 700;
+   color: var(--text-main);
+   border-bottom: 2px solid var(--border);
+   text-transform: uppercase;
+   font-size: 0.85em;
+ }
+ .output-container tbody tr:nth-child(even) {
+   background-color: hsla(0, 0%, 0%, 0.08); /* Subtle dark stripe */
+ }
+
+ /* Links */
+ .output-container a {
+   color: var(--accent);
+   text-decoration: none;
+   font-weight: 700;
+   transition: color var(--transition-speed) var(--transition-ease),
+               text-shadow var(--transition-speed) var(--transition-ease);
+   border-radius: var(--border-radius-sm);
+   text-shadow: 0 0 5px var(--accent-glow); /* Subtle glow on links */
+ }
+ .output-container a:hover {
+   color: hsl(var(--accent-hue), var(--accent-saturation), 70%); /* Lighter orange on hover */
+   text-decoration: underline;
+   text-decoration-color: hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.5);
+   text-underline-offset: 3px;
+   text-shadow: 0 0 8px var(--accent-glow-strong);
+ }
+ .output-container a:focus-visible {
+   outline: 2px solid var(--accent-glow);
+   outline-offset: 2px;
+ }
+ .output-container a:focus {
+    outline: 2px solid var(--accent-glow);
+    outline-offset: 2px;
+ }
+
+ /* Images */
+ .output-container img {
+   max-width: 100%; height: auto;
+   border-radius: var(--border-radius-sm); /* Sharper radius */
+   border: 1px solid var(--border);
+   background-color: var(--panel-bg); /* Dark bg for transparency */
+   display: block;
+   margin-block-start: 1.5em; margin-block-end: 1.5em;
+   box-shadow: var(--shadow-md);
+ }
+
+ /* Horizontal Rules */
+ .output-container hr {
+   border: none;
+   height: 2px;
+   background-image: linear-gradient(to right, transparent, var(--border-color-light), transparent);
+   margin: calc(var(--spacing-unit) * 10) 0;
+ }
+
+
+ /* === Flowchart & LaTeX (Basic Theming) === */
+ /* Apply general panel/card styling */
+ .flowchart-container, .latex-display {
+    margin: calc(var(--spacing-unit) * 6) 0;
+    padding: calc(var(--spacing-unit) * 6);
+    background-color: var(--card);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border);
+    overflow: auto;
+    text-align: center;
+    box-shadow: var(--shadow-panel), inset 0 2px 4px hsla(var(--shadow-color-rgb), 0.3);
+ }
+ /* Further styling specific to SVG elements would go here if needed */
+ /* Basic flowchart/latex SVG text color */
+ .flowchart-container svg text,
+ .latex-display svg text,
+ .latex-display svg g { /* Target MathJax output */
+    fill: var(--text-label);
+    stroke: var(--text-label); /* Affects some MathJax rendering */
+ }
+ /* Style Flowchart SVG Elements */
+ .flowchart-node {
+    fill: var(--control-bg); /* Use control background for nodes */
+    stroke: var(--border-color-light);
+    stroke-width: 1.5px;
+    transition: fill var(--transition-speed) var(--transition-ease);
+ }
+ .flowchart-node.start { fill: hsla(var(--accent-hue), 60%, 35%, 0.7); } /* Dim Accent */
+ .flowchart-node.end { fill: hsla(0, 50%, 40%, 0.7); }   /* Dim Red */
+ .flowchart-node.operation { fill: hsla(210, 30%, 40%, 0.7); } /* Dim Blue */
+ .flowchart-node.condition { fill: hsla(50, 30%, 40%, 0.7); } /* Dim Yellow */
+
+ .flowchart-text {
+    font-family: var(--font-sans);
+    font-size: 12px; /* Slightly smaller */
+    text-anchor: middle;
+    dominant-baseline: central;
+    fill: var(--text-main); /* Brighter text for readability */
+    pointer-events: none;
+ }
+
+ .flowchart-line {
+    stroke: var(--text-secondary);
+    stroke-width: 1.5px;
+    fill: none;
+ }
+
+ .flowchart-arrow {
+    fill: var(--text-secondary);
+ }
+
+ /* Fallback for Flowchart Source Code */
+ pre.flowchart {
+   background-color: var(--pre-bg);
+   padding: var(--spacing-unit) * 4; /* 16px */
+   border-radius: var(--border-radius-md);
+   white-space: pre-wrap;
+   font-family: var(--font-mono);
+   overflow-x: auto;
+   border: 1px solid var(--border);
+   color: var(--text-secondary);
+   font-size: 0.8rem; /* Smaller */
+   line-height: 1.6;
+   box-shadow: inset 0 1px 3px hsla(var(--shadow-color-rgb), 0.4);
+ }
+
+
+ /* === Scrollbar Styling (Retro) === */
+ ::-webkit-scrollbar {
+   width: 12px; /* Slightly thicker */
+   height: 12px;
+ }
+ ::-webkit-scrollbar-track {
+   background: var(--panel-bg); /* Match panel */
+   border-radius: 0; /* Square track */
+   border: 1px solid var(--border);
+   box-shadow: inset 0 0 3px hsla(var(--shadow-color-rgb), 0.3);
+ }
+ ::-webkit-scrollbar-thumb {
+   background-color: var(--control-bg); /* Control color */
+   border-radius: var(--border-radius-sm);
+   border: 1px solid var(--border-color-light);
+   box-shadow: inset 0 0 2px hsla(var(--shadow-color-rgb), 0.5);
+ }
+ ::-webkit-scrollbar-thumb:hover {
+   background-color: var(--button-hover-bg);
+   border-color: var(--accent);
+ }
+ ::-webkit-scrollbar-corner { background: transparent; }
+
+ /* Scrollbars within elements */
+ textarea::-webkit-scrollbar-track,
+ .output-container pre::-webkit-scrollbar-track,
+ .flowchart-container::-webkit-scrollbar-track,
+ .latex-display::-webkit-scrollbar-track {
+    background: var(--code-bg); /* Darker track inside elements */
+    box-shadow: inset 0 0 3px hsla(var(--shadow-color-rgb), 0.5);
+ }
+ textarea::-webkit-scrollbar-thumb,
+ .output-container pre::-webkit-scrollbar-thumb,
+ .flowchart-container::-webkit-scrollbar-thumb,
+ .latex-display::-webkit-scrollbar-thumb {
+    background-color: var(--text-secondary); /* Dimmer thumb */
+    border-color: var(--border);
+ }
+  textarea::-webkit-scrollbar-thumb:hover,
+ .output-container pre::-webkit-scrollbar-thumb:hover,
+ .flowchart-container::-webkit-scrollbar-thumb:hover,
+ .latex-display::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-main);
+    border-color: var(--accent);
+ }
+
+
+ /* === Responsiveness (Keep basic structure) === */
+ @media (max-width: 768px) {
+   .container {
+      padding: calc(var(--spacing-unit) * 8) calc(var(--spacing-unit) * 4); /* 32px 16px */
+   }
+   textarea {
+      min-height: 300px;
+      height: 35vh;
+      font-size: 0.9rem;
+   }
+   .output-container {
+     padding: calc(var(--spacing-unit) * 6); /* 24px */
+   }
+ }
+ @media (max-width: 600px) {
+   html {
+      font-size: 15px; /* Slightly smaller base on small screens */
+   }
+   .container {
+     padding: calc(var(--spacing-unit) * 6) calc(var(--spacing-unit) * 4); /* 24px 16px */
+   }
+   textarea {
+     font-size: 0.9rem;
+     padding: calc(var(--spacing-unit) * 4); /* 16px */
+     min-height: 250px;
+     height: 30vh;
+   }
+   button { /* Ensure buttons don't get too small */
+      padding: calc(var(--spacing-unit) * 2.5) calc(var(--spacing-unit) * 4);
+      font-size: 0.8rem;
+   }
+   .output-container {
+     padding: calc(var(--spacing-unit) * 5); /* 20px */
+   }
+   .help-text {
+     font-size: 0.8rem;
+     padding: 0 calc(var(--spacing-unit) * 4) calc(var(--spacing-unit) * 2.5); /* 0 16px 10px */
+   }
+   /* Keep stacked actions */
+   .actions { flex-direction: column; align-items: stretch; gap: calc(var(--spacing-unit) * 3); }
+   .button-group { justify-content: center; width: 100%; }
+   .button-group button { flex-grow: 1; }
+ }
+
+ /* === Enhanced Print Styles === */
+ @media print {
+    /* Force light theme variables for consistency */
     :root {
-      --primary: #3a86ff;
-      --background: #fafafa;
-      --card: #ffffff;
-      --text: #333;
-      --border: #ddd; /* More subtle border */
-      --accent: #ff6b6b;
-      --button-bg: #f0f0f0; /* Light button background */
-      --button-hover-bg: #e0e0e0; /* Lighter hover background */
-      --button-text: var(--text);
+        /* Resetting to basic print styles */
+        --panel-bg: #ffffff !important;
+        --panel-bg-texture: none !important;
+        --panel-noise: none !important;
+        --text-main: #000000 !important;
+        --text-secondary: #333333 !important;
+        --accent: #000000 !important; /* Black accent for print */
+        --accent-glow: none !important;
+        --card: #ffffff !important;
+        --border-color: #cccccc !important;
+        --code-bg: #f0f0f0 !important;
+        --code-text: #000000 !important;
+        --shadow-panel: none !important;
+        --shadow-control-raised: none !important;
+        --shadow-control-pressed: none !important;
+        --shadow-md: none !important;
+        --shadow-lg: none !important;
+        --border: #bbbbbb !important; /* Re-add simple border var */
+        --pre-bg: #f0f0f0 !important; /* Re-add pre-bg */
+        --button-bg: #eeeeee !important; /* Re-add */
     }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: var(--background);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
+   @page {
+     size: A4;
+     margin: 1.5cm; /* Standard A4 margins */
+   }
+
+   body {
+     background: white !important;
+     color: black !important;
+     font-family: 'Times New Roman', Times, serif; /* Serif for print */
+     font-size: 11pt;
+     line-height: 1.4;
+     min-height: unset !important;
+     display: block !important; /* Override flex */
+     -webkit-print-color-adjust: exact !important; /* Force colors */
+     print-color-adjust: exact !important;
+     background-image: none !important; /* Remove textures */
+     text-shadow: none !important;
+   }
+
+   .container {
+     max-width: 100% !important;
+     padding: 0 !important;
+     margin: 0 !important;
+     width: auto !important;
+   }
+
+   /* Hide UI elements */
+   .input-area, .actions, button, .help-text {
+     display: none !important;
+   }
+
+   /* Focus only on the output */
+   .editor-container {
+       gap: 0 !important; /* Remove gap */
+   }
+   .output-container {
+     border: none !important;
+     box-shadow: none !important;
+     padding: 0 !important;
+     margin: 0 !important;
+     background: white !important;
+     min-height: unset !important;
+     border-radius: 0 !important;
+     overflow: visible !important; /* Show all content */
+     hyphens: manual !important; /* Avoid auto-hyphens in print */
+   }
+
+   header {
+     text-align: left !important;
+     margin-bottom: 1cm !important;
+     border-bottom: 1px solid #ccc;
+     padding-bottom: 0.5cm;
+     page-break-after: avoid; /* Don't break page after header */
+   }
+
+   header h1 {
+     color: black !important;
+     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Sans-serif Title */
+     font-size: 18pt !important;
+     margin-bottom: 0.2cm !important;
+     text-transform: none !important; /* Normal case for print */
+     letter-spacing: normal !important;
+   }
+
+   header .subtitle {
+     font-size: 11pt !important;
+     color: #555 !important;
+     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+   }
+
+   /* Headings in output */
+    .output-container h1, .output-container h2, .output-container h3,
+    .output-container h4, .output-container h5, .output-container h6 {
+       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Sans-serif */
+       color: black !important;
+       page-break-after: avoid;
+       page-break-inside: avoid;
+       margin-block-start: 1.5em;
+       margin-block-end: 0.7em;
+       text-shadow: none !important;
+       text-transform: none !important; /* Normal case */
     }
+    .output-container h1 { font-size: 16pt; border-bottom: 1px solid #ccc !important; padding-bottom: 0.1em; color: black !important; }
+    .output-container h2 { font-size: 14pt; border-bottom: 1px solid #ccc !important; padding-bottom: 0.1em; color: black !important; }
+    .output-container h3 { font-size: 12pt; font-weight: bold; border-bottom: none !important; }
+    .output-container h4 { font-size: 11pt; font-weight: bold; }
+    .output-container h5 { font-size: 11pt; font-style: italic; }
+    .output-container h6 { font-size: 10pt; color: #555 !important; }
 
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 2rem;
-      width: 100%;
-      box-sizing: border-box;
-    }
+   /* Avoid breaks inside elements */
+   .latex-display, .flowchart-container, pre, blockquote, table, img, ul, ol {
+     page-break-inside: avoid;
+   }
+   figure, figcaption { page-break-inside: avoid; } /* Common HTML tags */
+   p { orphans: 3; widows: 3; } /* Prevent lonely lines */
 
-    header {
-      margin-bottom: 2rem;
-      text-align: center;
-    }
+   /* Links */
+   .output-container a {
+     color: #0000EE !important; /* Standard print blue */
+     text-decoration: underline !important;
+     font-weight: normal; /* Normal weight in print */
+     text-shadow: none !important;
+   }
+   /* Show full link URL after the link text */
+   .output-container a[href^="http"]::after,
+   .output-container a[href^="https"]::after {
+     content: " (" attr(href) ")";
+     font-size: 9pt;
+     color: #555;
+     word-break: break-all; /* Break long URLs */
+   }
+   .output-container a[href^="#"]::after {
+        content: ""; /* Don't show anchor links */
+   }
 
-    h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-      color: var(--primary);
-    }
-
-    .subtitle {
-      font-size: 1rem;
-      color: #777;
-      margin-top: 0;
-    }
-
-    .editor-container {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-
-    .input-area {
-      position: relative;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* More subtle shadow */
-      background: var(--card);
-      border: 1px solid var(--border);
-    }
-
-    textarea {
-      width: 100%;
-      height: 250px;
-      padding: 1rem;
-      font-size: 1rem;
-      border: none;
-      background: var(--card);
-      color: var(--text);
-      resize: vertical;
-      outline: none;
-      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-      box-sizing: border-box;
-      line-height: 1.6;
-    }
-
-    .actions {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.5rem 1rem;
-      background: var(--card);
-      border-top: 1px solid var(--border);
-      border-bottom-left-radius: 8px;
-      border-bottom-right-radius: 8px;
-    }
-
-    .button-group {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    button {
-      padding: 0.6rem 1.2rem; /* Slightly smaller padding */
-      font-size: 0.9rem; /* Slightly smaller font size */
-      background-color: var(--button-bg); /* Neutral background */
-      color: var(--button-text); /* Text color from variable */
-      border: 1px solid var(--border); /* Border from variable */
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-      font-weight: 500;
-      box-shadow: none; /* Remove default button shadow */
-    }
-
-    button:hover {
-      background-color: var(--button-hover-bg); /* Lighter hover color */
-    }
-
-    button.secondary {
-      background-color: var(--button-bg);
-      color: var(--button-text);
-      border: 1px solid var(--border);
-    }
-
-    button.secondary:hover {
-      background-color: var(--button-hover-bg);
-    }
-
-    button.clear {
-      background-color: var(--button-bg);
-      color: var(--button-text);
-      border: 1px solid var(--border);
-    }
-
-    button.clear:hover {
-      background-color: var(--button-hover-bg);
-    }
-
-    .output-container {
-      background: var(--card);
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin-top: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* More subtle shadow */
-      border: 1px solid var(--border);
-    }
-
-
-    .help-text {
-      font-size: 0.9rem;
-      color: #666;
-      margin-top: 0.5rem;
-      padding: 0 1rem 0.5rem 1rem;
-      display: block;
-    }
-
-    .help-text strong {
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    .flowchart-container {
-      margin: 1rem 0;
-      padding: 1rem;
-      background-color: #f8f8f8;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      overflow: auto;
-    }
-
-    .flowchart-container svg {
-      display: block;
-      margin: 0 auto;
-    }
-
-    .flowchart-node {
-      fill: white;
-      stroke: #666;
-      stroke-width: 2px;
-    }
-
-    .flowchart-node.start {
-      fill: #d4f7d4;
-    }
-
-    .flowchart-node.end {
-      fill: #f7d4d4;
-    }
-
-    .flowchart-node.operation {
-      fill: #d4e5f7;
-    }
-
-    .flowchart-node.condition {
-      fill: #f7f4d4;
-    }
-
-    .flowchart-text {
-      font-family: Arial, sans-serif;
-      font-size: 12px;
-      text-anchor: middle;
-      dominant-baseline: middle;
-    }
-
-    .flowchart-line {
-      stroke: #666;
-      stroke-width: 1.5px;
-      fill: none;
-    }
-
-    .flowchart-arrow {
-      fill: #666;
-    }
-
-    pre.flowchart {
-      background-color: #f7f7f7;
-      padding: 1rem;
-      border-radius: 4px;
-      white-space: pre-wrap;
-      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-      overflow-x: auto;
-      border: 1px solid var(--border);
-    }
-
-    .latex-display {
-      overflow-x: auto;
-      margin: 1rem 0;
-    }
-
-    .output-container code {
-      background-color: #eee;
-      color: #333;
-      padding: 0.2rem 0.5rem;
-      border-radius: 3px;
-      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-      font-size: 0.9rem;
-    }
-
-    .output-container a {
-      color: var(--primary);
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .output-container a:hover {
-      text-decoration: underline;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --primary: #3a86ff;
-        --background: #111;
-        --card: #1e1e1e;
-        --text: #eaeaea;
-        --border: #333;
-        --accent: #ff8a8a;
-        --button-bg: #2a2a2a; /* Dark button background */
-        --button-hover-bg: #383838; /* Darker hover background */
-        --button-text: var(--text);
-      }
-
-      pre.flowchart {
-        background-color: #252525;
-        border: 1px solid var(--border);
-      }
-      .output-container code {
-        background-color: #333;
-        color: #eee;
-      }
-      button.secondary {
-        background-color: var(--button-bg);
-        color: var(--button-text);
-        border: 1px solid var(--border);
-      }
-      button.secondary:hover {
-        background-color: var(--button-hover-bg);
-      }
-
-      button.clear {
-        background-color: var(--button-bg);
-        color: var(--button-text);
-        border: 1px solid var(--border);
-      }
-      button.clear:hover {
-        background-color: var(--button-hover-bg);
-      }
-
-    }
-
-    @media (max-width: 600px) {
-      .container {
-        padding: 1rem;
-      }
-      h1 {
-        font-size: 1.75rem;
-      }
-      .subtitle {
-        font-size: 0.9rem;
-      }
-      textarea {
-        font-size: 0.9rem;
-        padding: 0.75rem;
-        height: 200px;
-      }
-      button {
-        font-size: 0.9rem;
-        padding: 0.5rem 1rem;
-      }
-      .output-container {
-        padding: 1rem;
-      }
-      .help-text {
-        font-size: 0.8rem;
-        padding: 0 0.75rem 0.5rem 0.75rem;
-      }
-      .actions {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-      .button-group {
-        justify-content: space-between;
-      }
-    }
-
-    /* Enhanced Print-Specific Styles (Option 3) */
-    @media print {
-      /* Print-specific styles */
-      body {
-        background-color: white !important;
-        color: black !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-
-      .container {
-        max-width: 100% !important;
-        padding: 0 !important;
-        margin: 0 !important;
-      }
-
-      .input-area, .button-group, .actions, .export-dropdown, button, .help-text {
-        display: none !important;
-      }
-
-      .output-container {
+   /* Code */
+   pre, .output-container code {
+     background-color: #f0f0f0 !important;
+     color: black !important;
+     border: 1px solid #ccc !important;
+     padding: 0.1cm 0.2cm !important;
+     border-radius: 3px !important;
+     font-family: 'Courier New', Courier, monospace !important;
+     font-size: 9pt !important;
+     box-shadow: none !important;
+   }
+   pre {
+     padding: 0.3cm 0.5cm !important;
+     white-space: pre-wrap !important; /* Wrap long lines */
+     word-wrap: break-word;
+     overflow: visible !important;
+   }
+   .output-container pre code {
+        background: transparent !important;
         border: none !important;
-        box-shadow: none !important;
         padding: 0 !important;
-        margin: 0 !important;
-      }
+        font-size: inherit !important;
+        box-shadow: none !important;
+   }
 
-      header {
-        text-align: left !important;
-        margin-bottom: 1cm !important;
-      }
 
-      header h1 {
-        color: black !important;
-        font-size: 24pt !important;
-        margin-bottom: 0.5cm !important;
-      }
+   /* Lists */
+   .output-container ul, .output-container ol {
+     margin-left: 0.8cm !important; /* Indentation for print */
+     padding-left: 0 !important; /* Remove default padding */
+   }
+   .output-container li {
+     margin-bottom: 0.2cm !important;
+   }
+   .output-container li::marker {
+       color: black !important; /* Simple black markers */
+   }
 
-      header .subtitle {
-        font-size: 12pt !important;
-        color: #555 !important;
-      }
-
-      .latex-display {
-        page-break-inside: avoid;
-        margin: 1cm 0 !important;
-        text-align: center;
-      }
-
-      .flowchart-container {
-        page-break-inside: avoid;
-        background: white !important;
-        border: 1px solid #ddd !important;
-        padding: 0.5cm !important;
-        margin: 1cm 0 !important;
-      }
-
-      pre, code {
-        background-color: #f0f0f0 !important;
-        color: black !important;
-        border: 1px solid #ccc !important;
-        padding: 0.2cm 0.5cm !important;
-        border-radius: 3px !important;
-        font-size: 10pt !important;
-      }
-      pre.flowchart {
-        white-space: pre-wrap !important;
-      }
-
-      ul, ol {
-        margin-left: 20px !important;
-      }
-      li {
-        margin-bottom: 0.2cm !important;
-      }
-
-      a {
-        color: blue !important;
-        text-decoration: none !important;
-      }
-
-      @page {
-        size: A4;
-        margin: 1.5cm;
-      }
-
-      hr {
-        border: none;
-        border-top: 1px solid #ccc;
-        margin: 1cm 0;
-        page-break-after: avoid;
-      }
+    /* Blockquotes */
+    .output-container blockquote {
+        margin: 0.5cm 0 !important;
+        padding: 0.3cm 0.5cm !important;
+        border-left: 3px solid #ccc !important;
+        background-color: #f9f9f9 !important;
+        color: #333 !important;
+        font-style: normal !important; /* Often preferred in print */
+        border-radius: 0 !important;
+        box-shadow: none !important;
     }
 
-  </style>
+    /* Tables */
+   .output-container table {
+     font-size: 9pt !important;
+     border-color: #bbb !important;
+     border-collapse: collapse !important; /* Use collapse for clean lines */
+     border-radius: 0 !important;
+     width: 100%; /* Expand table */
+     margin: 0.5cm 0 !important;
+     box-shadow: none !important;
+   }
+   .output-container th, .output-container td {
+     border: 1px solid #bbb !important;
+     padding: 0.2cm 0.3cm !important;
+   }
+   .output-container thead th {
+     background-color: #e8e8e8 !important;
+     font-weight: bold;
+     text-transform: none !important; /* Normal case */
+   }
+   .output-container tbody tr:nth-child(even) {
+     background-color: #f6f6f6 !important; /* Very light striping */
+   }
+
+   /* Images */
+   .output-container img {
+        border: 1px solid #ccc !important;
+        border-radius: 0 !important;
+        max-width: 90% !important; /* Don't let images touch margins */
+        display: block;
+        margin: 0.5cm auto !important; /* Center images */
+        background: none !important;
+        box-shadow: none !important; /* Explicitly remove shadow */
+   }
+
+   /* Horizontal Rule */
+   .output-container hr { /* Target only HR inside output */
+     border: none !important;
+     border-top: 1px solid #ccc !important;
+     margin: 1cm 0 !important;
+     page-break-after: avoid;
+     background-image: none !important; /* Explicitly remove gradient */
+     height: 1px !important; /* Ensure it's just a line */
+   }
+
+   /* LaTeX / MathJax */
+   .latex-display {
+     margin: 0.5cm 0 !important;
+     text-align: center !important;
+     overflow: visible !important;
+     box-shadow: none !important;
+     background: none !important;
+     border: none !important;
+     padding: 0 !important;
+   }
+   .latex-display svg {
+     max-width: 100%;
+   }
+   .latex-display svg g[fill] { /* More specific selector for MathJax */
+     fill: black !important;
+   }
+   .latex-display svg g[stroke] { /* More specific selector for MathJax */
+     stroke: black !important;
+   }
+
+
+   /* Flowcharts */
+   .flowchart-container {
+     background: #f9f9f9 !important;
+     border: 1px solid #ccc !important;
+     padding: 0.5cm !important;
+     margin: 0.5cm 0 !important;
+     overflow: visible !important;
+     border-radius: 0 !important;
+     box-shadow: none !important;
+   }
+   .flowchart-container svg .flowchart-node {
+      stroke: black !important;
+      stroke-width: 1px !important;
+      fill: #ffffff !important; /* Simple white fill */
+    }
+   /* Optionally add subtle fills back if needed, but B&W often best */
+   /* .flowchart-container svg .flowchart-node.start { fill: #e8f5e9 !important; } */
+   /* ... other node types ... */
+   .flowchart-container svg .flowchart-text {
+      fill: black !important;
+      font-family: sans-serif !important; /* Basic sans-serif for print */
+      font-size: 9pt !important;
+   }
+   .flowchart-container svg .flowchart-line {
+      stroke: black !important;
+      stroke-width: 1px !important;
+   }
+   .flowchart-container svg .flowchart-arrow {
+      fill: black !important;
+   }
+   pre.flowchart { /* Fallback flowchart code */
+        font-size: 8pt !important;
+        background-color: #f0f0f0 !important;
+        border: 1px solid #ccc !important;
+        color: #333 !important;
+        box-shadow: none !important;
+   }
+ } /* Closing bracket for @media print */
+
+</style>
 
   <script>
+    // MathJax Configuration - Placed before loading MathJax
     window.MathJax = {
       tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']],
-        displayMath: [['$$', '$$'], ['\\[', '\\]']],
-        processEscapes: true,
-        processEnvironments: true,
-        packages: {'[+]': ['ams']}
+        inlineMath: [['$', '$'], ['\\(', '\\)']], // Standard inline delimiters
+        displayMath: [['$$', '$$'], ['\\[', '\\]']], // Standard display delimiters
+        processEscapes: true, // Process \$, etc.
+        processEnvironments: true, // Process \begin{equation}...\end{equation}, etc.
+        tags: 'ams', // Automatic equation numbering (AMS style)
+        packages: {'[+]': ['ams', 'boldsymbol', 'newcommand']} // Include common packages: ams (needed for align, matrix, etc.), boldsymbol, newcommand
+      },
+      svg: {
+        fontCache: 'global' // Improve rendering speed
       },
       options: {
-        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-        ignoreHtmlClass: 'tex2jax_ignore',
-        processHtmlClass: 'tex2jax_process'
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'], // Tags MathJax should ignore
+        ignoreHtmlClass: 'tex2jax_ignore', // Classes MathJax should ignore
+        processHtmlClass: 'tex2jax_process' // Classes MathJax should process (if needed)
+      },
+      startup: {
+          ready: () => {
+            MathJax.startup.defaultReady();
+            // Optional: Add custom MathJax setup after ready if needed
+          }
       }
     };
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+  <!-- Load MathJax -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" id="MathJax-script" async></script>
+  <!-- Load Marked (Markdown Parser) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@4.2.12/marked.min.js"></script> <!-- Using a CDN link for simplicity -->
+  <!-- Load Raphael & Flowchart.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.17.1/flowchart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.17.1/flowchart.min.js"></script> <!-- Using CDN links -->
+
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Markdown & LaTeX Renderer</h1>
-      <p class="subtitle">Render Markdown, LaTeX, and Flowcharts in your browser.</p>
+      <h1>Markdown & LaTeX Рендерер</h1> <!-- Updated Title -->
+      <p class="subtitle">Рендеринг Markdown, LaTeX и Flowcharts прямо в браузере.</p> <!-- Updated Subtitle -->
     </header>
 
     <div class="editor-container">
       <div class="input-area">
-        <textarea id="inputMessage" placeholder="Type Markdown, LaTeX ($...$ or $$...$$ or C(n, k)), and ASCII flowcharts (```flowchart...```)">
-## Example Content
+        <textarea id="inputMessage" placeholder="Введите Markdown, LaTeX ($...$, $$...$$, \(...\), \[...\], \begin{env}...\end{env}, C(n, k)) и ASCII flowcharts (```flowchart...)">## Пример содержимого
 
-This is **Markdown** text. You can write paragraphs, lists, etc.
+Это **Markdown** текст. Вы можете писать параграфы, списки и т.д.
 
-- Item 1
-- Item 2
+- Элемент 1
+- Элемент 2
 
-Inline LaTeX: $E=mc^2$.
+Встроенный LaTeX: $E=mc^2$. Или так: \( \hbar = \frac{h}{2\pi} \).
 
-Display LaTeX:
+Блочный LaTeX:
 $$
-\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+\sum_{i=1}^{n} i^2 = \frac{n(n+1)(2n+1)}{6}
 $$
+Или с использованием окружения:
+\[
+\begin{pmatrix} a & b \\ c & d \end{pmatrix}^{-1} = \frac{1}{ad-bc} \begin{pmatrix} d & -b \\ -c & a \end{pmatrix}
+\]
 
-Binomial coefficient: $C(n, k) = \frac{n!}{k!(n-k)!}$ which is rendered as $C(n, k) = \binom{n}{k}$.
+Биномиальный коэффициент: $C(n, k) = \frac{n!}{k!(n-k)!}$, который рендерится как $\binom{n}{k}$.
+
+Уравнения с выравниванием (требует `ams` пакета в MathJax):
+$$
+\begin{align}
+f(x) &= x^2 + 2x + 1 \\
+&= (x+1)^2
+\end{align}
+$$
 
 Flowchart:
 ```flowchart
-st=>start: Start
-op=>operation: Your Operation
-cond=>condition: Yes or No?
-e=>end: End
+st=>start: Начало |past
+op1=>operation: Шаг 1 |current
+op2=>operation: Шаг 2
+cond=>condition: Условие выполнено?
+sub=>subroutine: Подпрограмма
+io=>inputoutput: Ввод/Вывод
+e=>end: Конец |invalid
 
-st->op->cond
-cond(yes)->e
-cond(no)->op
-```
-        </textarea>
-        <div class="actions">
-          <div class="button-group">
-            <button id="renderBtn">Render Content</button>
-            <button id="clearBtn" class="clear">Clear</button>
-            <button id="printPDFBtn" class="export">Export to PDF</button> <!-- Renamed and restyled button -->
-          </div>
-        </div>
-        <div class="help-text">
-          Supports <strong>Markdown</strong>, <strong>LaTeX</strong> (inline: <code>$...$</code> or <code>\(...\)</code>, display: <code>$$...$$</code> or <code>\[...\]</code>, and binomial coefficients: <code>C(n, k)</code>), and <strong>ASCII flowcharts</strong> (using <code>```flowchart</code> ... <code>```</code> blocks). Press <strong>Ctrl+Enter</strong> to render quickly. To save as PDF, click "<strong>Export to PDF</strong>," then select "Save as PDF" in the print dialog of your browser.
-        </div>
-      </div>
-
-      <div class="output-container" id="output">
-        <!-- Rendered content will appear here -->
+st->op1(right)->cond
+cond(yes, right)->op2(bottom)->io->e
+cond(no)->sub(right)->op1
+    </textarea>
+    <div class="actions">
+      <div class="button-group">
+        <button id="renderBtn">Отрендерить</button> <!-- Updated Text -->
+        <button id="clearBtn" class="clear">Очистить</button> <!-- Updated Text -->
+        <button id="printPDFBtn" class="export">Экспорт в PDF</button>
       </div>
     </div>
-  </div>
+    <div class="help-text">
+        Поддерживается <strong>Markdown</strong> (включая таблицы, списки, и т.д.),
+        <strong>LaTeX</strong> (встроенный: <code>$...$</code> или <code>\(...\)</code>,
+        блочный: <code>$$...$$</code> или <code>\[...\]</code>,
+        окружения типа <code>\begin{align}...\end{align}</code>,
+        и биномиальные коэффициенты: <code>C(n, k)</code>),
+        а также <strong>ASCII flowcharts</strong> (в блоках <code>```flowchart</code> ... <code>```</code>).
+        Нажмите <strong>Ctrl+Enter</strong> для быстрого рендеринга.
+        Для сохранения в PDF нажмите "<strong>Экспорт в PDF</strong>" и выберите "Сохранить как PDF" в диалоге печати браузера.
+    </div>
+
+      </div> <!-- Closing input-area -->
+
+      <div class="output-container" id="output">
+          <!-- Initial content will be rendered here by JS -->
+          <p>Введите текст в поле выше и нажмите "Отрендерить" или Ctrl+Enter.</p>
+      </div>
+    </div> <!-- Closing editor-container -->
+  </div> <!-- Closing container -->
 
   <script>
-    document.getElementById("renderBtn").addEventListener("click", function() {
-      renderContent();
-    });
+    const inputElement = document.getElementById("inputMessage");
+    const outputElement = document.getElementById("output");
+    const renderBtn = document.getElementById("renderBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const printPDFBtn = document.getElementById("printPDFBtn");
 
-    document.getElementById("clearBtn").addEventListener("click", function() {
-      document.getElementById("inputMessage").value = "";
-      document.getElementById("output").innerHTML = "<p>Content cleared. Render new content when ready.</p>";
-    });
+    // --- Event Listeners ---
 
-    document.getElementById("inputMessage").addEventListener("keydown", function(e) {
-      if (e.ctrlKey && e.key === "Enter") {
-        renderContent();
-        e.preventDefault();
-      }
-    });
+    renderBtn.addEventListener("click", renderContent);
+    clearBtn.addEventListener("click", clearContent);
+    inputElement.addEventListener("keydown", handleCtrlEnter);
+    printPDFBtn.addEventListener("click", printToPDF);
 
-    document.getElementById("printPDFBtn").addEventListener("click", printToPDF); // Correct button ID
-
+    // --- Core Functions ---
 
     function renderContent() {
-      let inputText = document.getElementById("inputMessage").value;
-      const outputElement = document.getElementById("output");
+      let inputText = inputElement.value;
+      let currentScroll = outputElement.scrollTop; // Try to preserve scroll position
 
+      // 1. Pre-process Text: Custom C(n, k) replacement
+      // Needs to happen before Markdown messes with it.
       inputText = inputText.replace(/C\(([^,]+),\s*([^)]+)\)/g, '\\binom{$1}{$2}');
 
-      const latexBlocks = [];
-      let processedText = inputText.replace(/\\\[([\s\S]*?)\\\]/g, function(match, latex) {
-        const id = `LATEXDISPLAY${latexBlocks.length}`;
-        latexBlocks.push({ id, content: latex, display: true });
-        return id;
-      });
-
-      processedText = processedText.replace(/\$\$([\s\S]*?)\$\$/g, function(match, latex) {
-        const id = `LATEXDISPLAY${latexBlocks.length}`;
-        latexBlocks.push({ id, content: latex, display: true });
-        return id;
-      });
-
-      processedText = processedText.replace(/\\\(([\s\S]*?)\\\)/g, function(match, latex) {
-        const id = `LATEXINLINE${latexBlocks.length}`;
-        latexBlocks.push({ id, content: latex, display: false });
-        return id;
-      });
-
-      processedText = processedText.replace(/\$(\S[\s\S]*?\S)\$/g, function(match, latex) {
-        const id = `LATEXINLINE${latexBlocks.length}`;
-        latexBlocks.push({ id, content: latex, display: false });
-        return id;
-      });
-
+      // 2. Extract Flowcharts (using placeholders to protect from Markdown)
       const flowchartBlocks = [];
-      processedText = processedText.replace(/```(?:flowchart)?\s*([\s\S]*?)\s*```/g, function(match, content) {
-        const id = `FLOWCHART${flowchartBlocks.length}`;
+      inputText = inputText.replace(/```(?:flowchart|flow)\s*([\s\S]*?)\s*```/g, (match, content) => {
+        const id = `__FLOWCHART_PLACEHOLDER_${flowchartBlocks.length}__`;
         flowchartBlocks.push({ id, content: content.trim() });
-        return id;
+        // Use a div placeholder with a specific class for easier targeting
+        return `<div id="${id}" class="flowchart-placeholder" style="display: none;"></div>`;
       });
 
+      // 3. Render Markdown
       const markedOptions = {
-        mangle: false,
-        headerIds: false,
-        breaks: true,
-        gfm: true
+        mangle: false,     // Don't obfuscate email addresses
+        headerIds: false,  // Don't generate header IDs automatically
+        breaks: true,      // Convert single line breaks to <br>
+        gfm: true,         // Enable GitHub Flavored Markdown (tables, etc.)
+        highlight: function(code, lang) { // Optional: Add syntax highlighting later if needed
+            // Example: using highlight.js if loaded
+            // if (hljs && hljs.getLanguage(lang)) {
+            //   try {
+            //     return hljs.highlight(code, { language: lang }).value;
+            //   } catch (__) {}
+            // }
+            return code; // Default: no highlighting
+         }
       };
-      let htmlOutput = marked.parse(processedText, markedOptions);
+      let htmlOutput = marked.parse(inputText, markedOptions);
 
-      latexBlocks.forEach(block => {
-        if (block.display) {
-          htmlOutput = htmlOutput.replace(
-            block.id,
-            `<div class="latex-display">\\[${block.content}\\]</div>`
-          );
-        } else {
-          htmlOutput = htmlOutput.replace(block.id, `\\(${block.content}\\)`);
-        }
-      });
-
+      // 4. Restore Flowcharts into dedicated containers, replacing placeholders
       flowchartBlocks.forEach(block => {
-        const containerId = `flowchart-container-${block.id}`;
+        const containerId = `flowchart-container-${block.id.replace(/__/g, '')}`; // Create unique ID for container
+        // More robust regex to find the placeholder div
+        const placeholderRegex = new RegExp(`<div id="${block.id}" class="flowchart-placeholder"( style="display: none;")?></div>`);
         htmlOutput = htmlOutput.replace(
-          block.id,
+          placeholderRegex,
           `<div id="${containerId}" class="flowchart-container" data-flowchart="${encodeURIComponent(block.content)}"></div>`
         );
       });
 
+      // 5. Update Output Element
       outputElement.innerHTML = htmlOutput;
 
-      if (window.MathJax) {
-        MathJax.typesetPromise([outputElement]).catch(function(err) {
-          console.error("MathJax typeset failed:", err);
-          outputElement.innerHTML += `<p style="color: red;">Error rendering LaTeX: ${err.message}</p>`;
-        });
+      // 6. Typeset LaTeX using MathJax
+      if (window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise([outputElement])
+            .catch(err => {
+                console.error("MathJax typeset failed:", err);
+                // Append error message without clearing existing content
+                const errorElement = document.createElement('p');
+                errorElement.style.color = 'red';
+                errorElement.style.fontWeight = 'bold';
+                errorElement.textContent = `Ошибка рендеринга LaTeX: ${err.message}`;
+                outputElement.appendChild(errorElement);
+            })
+            .then(() => {
+                // 7. Render Flowcharts after MathJax is done
+                renderFlowcharts();
+                try { // Use try-catch for safety if scroll preservation fails
+                 outputElement.scrollTop = currentScroll; // Restore scroll position after rendering
+                } catch (e) { console.warn("Could not restore scroll position:", e); }
+            });
+      } else {
+          console.warn("MathJax не найден или не готов.");
+          // Render flowcharts even if MathJax fails/is missing
+          renderFlowcharts();
+          try {
+             outputElement.scrollTop = currentScroll; // Restore scroll position
+          } catch (e) { console.warn("Could not restore scroll position:", e); }
       }
-
-      renderFlowcharts();
     }
 
     function renderFlowcharts() {
-      const containers = document.querySelectorAll('.flowchart-container');
-      containers.forEach(container => {
+      // Important: Query within the outputElement to ensure we only get flowcharts from the current render
+      const containers = outputElement.querySelectorAll('.flowchart-container');
+      containers.forEach((container) => {
+        // Avoid re-rendering if already processed (check for svg child)
+        if (container.querySelector('svg')) {
+            return;
+        }
         const flowchartContent = decodeURIComponent(container.getAttribute('data-flowchart'));
+        if (!flowchartContent) return;
+
         try {
-          const diagram = flowchart.parse(flowchartContent);
+          // Clear previous content (like error messages) in case of re-render attempt
           container.innerHTML = '';
+
+          const diagram = flowchart.parse(flowchartContent);
+
+          // Get current theme's text color for flowchart text
+          const currentTextColor = getComputedStyle(document.documentElement).getPropertyValue('--text').trim();
+
           diagram.drawSVG(container, {
-            'line-width': 2,
+            'line-width': 1.5,
             'line-length': 50,
             'text-margin': 10,
-            'font-size': 14,
-            'font-color': getComputedStyle(document.documentElement).getPropertyValue('--text').trim(),
+            'font-size': 13, // Match CSS
+            'font-family': getComputedStyle(document.documentElement).getPropertyValue('--font-sans').trim(),
+            'font-color': currentTextColor, // Use dynamic text color
             'line-color': '#666',
-            'element-color': '#666',
-            'fill': 'white',
-            'yes-text': 'yes',
-            'no-text': 'no',
+            'element-color': '#666', // Border color for elements
+             // Fills are handled by CSS classes now, but provide fallbacks
+            'fill': 'var(--card)', // Use card background as default fill
+            'yes-text': 'Да', // Localized
+            'no-text': 'Нет',  // Localized
             'arrow-end': 'block',
             'scale': 1,
+             // Use CSS classes for styling nodes - map flowchart types to CSS classes
             'symbols': {
-              'start': { 'font-color': 'black', 'element-color': 'black', 'fill': '#d4f7d4' },
-              'end': { 'font-color': 'black', 'element-color': 'black', 'fill': '#f7d4d4' },
-              'operation': { 'font-color': 'black', 'element-color': 'black', 'fill': '#d4e5f7' },
-              'condition': { 'font-color': 'black', 'element-color': 'black', 'fill': '#f7f4d4' }
-            }
+                'start': { 'class': 'flowchart-node start' },
+                'end': { 'class': 'flowchart-node end' },
+                'operation': { 'class': 'flowchart-node operation' },
+                'inputoutput': { 'class': 'flowchart-node io' }, // Added type
+                'subroutine': { 'class': 'flowchart-node sub' }, // Added type
+                'condition': { 'class': 'flowchart-node condition' }
+            },
+             // Add classes for state modifiers (like |past, |current)
+             'flowstate' : {
+                 'past' : { 'fill': 'var(--text-secondary)', 'font-color': 'var(--background)', 'font-size': 12 }, // Adjusted contrast
+                 'current' : { 'fill': 'var(--primary)', 'font-color': 'white', 'font-weight': 'bold' }, // Ensure contrast
+                 'future' : { 'fill': '#FFFF99', 'font-color': '#555'}, // Added font color for future state
+                 'invalid': { 'fill': 'var(--accent)', 'font-color': 'white' }, // Ensure contrast
+                 // Use more subtle styling for approved/rejected, relying on color mostly
+                 'approved' : { 'fill': 'var(--button-hover-bg)', 'font-size': 12, 'element-color': '#5cb85c' }, // Greenish border
+                 'rejected' : { 'fill': 'var(--button-hover-bg)', 'font-size': 12, 'element-color': 'var(--accent)' } // Reddish border
+             }
           });
         } catch (error) {
-          console.error("Error rendering flowchart:", error);
-          container.innerHTML = `<pre class="flowchart">${flowchartContent}</pre><p style="color: red;">Error rendering flowchart: ${error.message}</p>`;
+          console.error("Ошибка рендеринга flowchart:", error);
+          // Display error and the source code
+          container.innerHTML = `<pre class="flowchart" style="border-color: red;">${flowchartContent}</pre><p style="color: red; font-weight: bold;">Ошибка рендеринга flowchart: ${error.message}</p>`;
         }
       });
     }
 
 
-    function printToPDF() {
-      const outputElement = document.getElementById("output");
+    function clearContent() {
+      inputElement.value = "";
+      outputElement.innerHTML = "<p>Содержимое очищено. Введите новый текст для рендеринга.</p>"; // Updated text
+    }
 
-      if (outputElement.innerHTML.trim() === "") {
-        alert("Please render content before printing.");
-        return;
+    function handleCtrlEnter(e) {
+      if (e.ctrlKey && e.key === "Enter") {
+        renderContent();
+        e.preventDefault(); // Prevent default Enter behavior (new line)
       }
+    }
 
-      const printWindow = window.open('', '_blank');
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Export to PDF</title>
-            <style>
-              /* Basic styles */
-              body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                color: #333;
-              }
-            </style>
-            <link rel="stylesheet" href="style.css" media="print">
-          </head>
-          <body>
-            ${outputElement.innerHTML}
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.focus();
-      alert("For best results, use your browser's 'Print' function (Ctrl+P or Cmd+P) and choose 'Save as PDF' as the destination in the print dialog.");
-      setTimeout(() => {
-        printWindow.print();
-      }, 500);
+    function printToPDF() {
+        // Check if there is meaningful content to print (ignore placeholder)
+        const placeholderText = "Введите текст в поле выше и нажмите \"Отрендерить\" или Ctrl+Enter.";
+        const cleanedOutputHTML = outputElement.innerHTML.replace(/<p>\s*<\/p>/gi, '').trim(); // Remove empty paragraphs
+
+        if (cleanedOutputHTML === "" || cleanedOutputHTML === `<p>${placeholderText}</p>`) {
+            alert("Пожалуйста, сначала отрендерите содержимое для экспорта в PDF.");
+            return;
+        }
+
+        // Trigger browser's print dialog
+        window.print();
+
+        // Inform user how to save as PDF (as browsers handle this differently)
+        // A short delay might be needed for the alert not to interfere with the print dialog opening
+        setTimeout(() => {
+            alert("В диалоге печати вашего браузера выберите 'Сохранить как PDF' (Save as PDF) в качестве принтера/назначения.");
+        }, 100); // 100ms delay
     }
 
 
-    document.addEventListener('DOMContentLoaded', function() {
-      renderContent();
-      if (window.navigator.standalone) {
+    // --- Initial Load ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Render initial content present in the textarea
+        if (inputElement.value.trim() !== "") {
+             renderContent();
+        } else {
+            // If textarea is empty, show the default placeholder message
+            outputElement.innerHTML = '<p>Введите текст в поле выше и нажмите "Отрендерить" или Ctrl+Enter.</p>';
+        }
+
+      // Add class if running as PWA
+      if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
         document.body.classList.add('standalone-mode');
       }
     });
+
   </script>
+
 </body>
 </html>
