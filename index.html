@@ -13,161 +13,146 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-sans@5.2.5/index.css">
 
   <title>Markdown, LaTeX и Flowchart Рендерер</title> <!-- Updated Title -->
   <style>
   @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Fira+Code:wght@400;500&display=swap'); /* Changed sans font */
 
  :root {
-   /* === Retro Hardware Palette (Dark Default) === */
-   --panel-bg: hsl(30, 8%, 18%); /* Dark desaturated brown/charcoal */
-   --panel-bg-texture: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); /* Subtle grid texture */
-   --panel-bg-size: 3px 3px; /* Texture size */
-   --panel-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E"); /* Subtle noise SVG */
+   /* === Modern Dark Palette === */
+   --panel-bg: hsl(220, 15%, 15%); /* Darker, cooler blue-grey */
+   --panel-bg-texture: none; /* Removed for cleaner look */
+   --panel-bg-size: 3px 3px;
+   --panel-noise: none; /* Removed for cleaner look */
 
-   --text-main: hsl(35, 15%, 85%); /* Off-white / light beige */
-   --text-secondary: hsl(35, 10%, 65%); /* Slightly darker beige */
-   --text-label: hsl(35, 15%, 75%); /* For labels, slightly dimmer */
+   --text-main: hsl(0, 0%, 95%); /* Brighter white for better contrast */
+   --text-secondary: hsl(0, 0%, 70%); /* Lighter grey for secondary text */
+   --text-label: hsl(0, 0%, 60%); /* Softer grey for labels */
 
-   --accent-hue: 35; /* Warm Orange/Amber */
-   --accent-saturation: 90%;
-   --accent-lightness: 60%;
-   --accent: hsl(var(--accent-hue), var(--accent-saturation), var(--accent-lightness)); /* #f5a623 */
-   --accent-dark: hsl(var(--accent-hue), var(--accent-saturation), 50%); /* #d98a0d */
-   --accent-glow: hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.5);
-   --accent-glow-strong: hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.7);
+   --accent-hue: 200; /* Cooler blue accent */
+   --accent-saturation: 70%;
+   --accent-lightness: 55%;
+   --accent: hsl(var(--accent-hue), var(--accent-saturation), var(--accent-lightness)); /* #529cca */
+   --accent-dark: hsl(var(--accent-hue), var(--accent-saturation), 45%); /* Darker blue */
+   --accent-glow: hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.4); /* More subtle glow */
+   --accent-glow-strong: hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.6);
 
-   --control-bg: hsl(0, 0%, 30%); /* Darker grey for button/knob base */
-   --control-bevel-light: hsla(0, 0%, 60%, 0.5); /* Highlight for bevel */
-   --control-bevel-dark: hsla(0, 0%, 10%, 0.6); /* Shadow for bevel */
-   --control-inset-shadow: hsla(0, 0%, 5%, 0.5); /* Inner shadow for pressed state */
+   --control-bg: hsl(220, 10%, 25%); /* Button background, slightly lighter than panel */
+   --control-bevel-light: hsla(0, 0%, 100%, 0.05); /* Subtle highlight */
+   --control-bevel-dark: hsla(0, 0%, 0%, 0.2);    /* Subtle shadow */
+   --control-inset-shadow: hsla(0, 0%, 0%, 0.3); /* Inner shadow for pressed state */
 
-   --border-color: hsl(30, 8%, 25%); /* Border slightly lighter than panel */
-   --border-color-light: hsl(30, 8%, 40%); /* Lighter border for hover/focus */
+   --border-color: hsl(220, 10%, 30%); /* Border color, subtle */
+   --border-color-light: hsl(220, 10%, 45%); /* Lighter border for hover/focus */
 
-   --shadow-color-rgb: 0, 0%, 0%; /* Black base for shadows */
+   --shadow-color-rgb: 0, 0%, 5%; /* Darker base for shadows */
    --shadow-strength-md: 0.5;
    --shadow-strength-lg: 0.6;
 
    /* === Semantic Variables (Defaults to Dark Retro) === */
    --background: var(--panel-bg);
-   --card: hsl(30, 8%, 22%); /* Slightly lighter card bg */
+   --card: hsl(220, 15%, 18%); /* Card background, slightly lighter than main panel */
    --text: var(--text-main);
    --text-secondary: var(--text-secondary);
    --border: var(--border-color);
    --button-bg: var(--control-bg);
-   --button-hover-bg: hsl(0, 0%, 35%);
-   --button-text: var(--text-main);
-   --code-bg: hsl(30, 8%, 15%); /* Slightly darker for code */
+   --button-hover-bg: hsl(var(--accent-hue), var(--accent-saturation), 50%); /* Use accent for hover */
+   --button-text: var(--text-main); /* Ensure button text is readable */
+   --code-bg: hsl(220, 15%, 12%); /* Darker background for code blocks */
    --code-text: var(--text-label);
    --pre-bg: var(--code-bg);
    --focus-ring-color: var(--accent-glow);
 
    /* === Typography === */
-   --font-sans: 'Roboto Condensed', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif; /* More condensed font */
+   --font-sans: 'Geist Sans', 'Roboto Condensed', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif; /* More condensed font */
    --font-mono: 'Fira Code', 'Cascadia Code', 'Menlo', 'Monaco', 'Courier New', monospace;
-   --base-font-size: 16px;
-   --line-height-base: 1.6;
-   --line-height-code: 1.7;
+   --base-font-size: 16px; /* Base font size for rem units */
+   --line-height-base: 1.5; /* Modern line height for body text */
+   --line-height-code: 1.6; /* Slightly more for code for readability */
 
    /* === Sizing & Spacing === */
-   --container-width: 900px;
-   --border-radius-sm: 3px; /* Sharper radii */
-   --border-radius-md: 5px;
+   --container-width: 960px; /* Slightly wider container */
+   --border-radius-sm: 4px; /* Consistent modern radii */
+   --border-radius-md: 6px;
    --border-radius-lg: 8px;
-   --spacing-unit: 0.25rem; /* 4px */
+   --spacing-unit: 0.25rem; /* 4px, base unit for spacing */
 
-   /* === Transitions & Shadows (Retro Style) === */
-   --transition-speed: 0.15s; /* Slightly faster */
-   --transition-ease: ease-out;
-   /* Simulating depth */
+   /* === Transitions & Shadows (Modern Style) === */
+   --transition-speed: 0.2s; /* Slightly slower for smoother feel */
+   --transition-ease: ease-in-out;
+   /* Modern, subtle shadows */
    --shadow-panel:
-     inset 0 1px 0 hsla(0, 0%, 100%, 0.03), /* Subtle top highlight */
-     0 2px 3px 1px hsla(var(--shadow-color-rgb), 0.3), /* Main drop shadow */
-     0 0 0 1px hsla(var(--shadow-color-rgb), 0.2); /* Thin edge */
-   --shadow-control-raised: /* For buttons/knobs */
-     /* Bevel */
-     inset 1px 1px 1px var(--control-bevel-light),
-     inset -1px -1px 1px var(--control-bevel-dark),
-     /* Drop Shadow */
-     1px 2px 3px 1px hsla(var(--shadow-color-rgb), var(--shadow-strength-md));
-   --shadow-control-pressed: /* For active/pressed buttons */
-     /* Inset shadow */
-     inset 2px 2px 4px 1px var(--control-inset-shadow),
-     /* Reversed subtle bevel */
-     inset -0.5px -0.5px 0.5px var(--control-bevel-light),
-     inset 0.5px 0.5px 0.5px var(--control-bevel-dark);
-    --shadow-glow: 0 0 8px 2px var(--accent-glow);
-    --shadow-glow-strong: 0 0 12px 4px var(--accent-glow-strong);
+     0 1px 2px hsla(var(--shadow-color-rgb), 0.1),
+     0 2px 4px hsla(var(--shadow-color-rgb), 0.1);
+   --shadow-control-raised: /* For buttons/knobs - flatter */
+     0 1px 2px hsla(var(--shadow-color-rgb), 0.15);
+   --shadow-control-pressed: /* For active/pressed buttons - flatter */
+     inset 0 1px 2px hsla(var(--shadow-color-rgb), 0.2);
+    --shadow-glow: 0 0 6px 1px var(--accent-glow); /* Softened glow */
+    --shadow-glow-strong: 0 0 10px 2px var(--accent-glow-strong);
 
-    /* Specific shadows for consistency (based on md/lg from original) */
-    --shadow-md: 0 4px 6px -1px hsla(var(--shadow-color-rgb), 0.4), 0 2px 4px -2px hsla(var(--shadow-color-rgb), 0.4);
-    --shadow-lg: 0 10px 15px -3px hsla(var(--shadow-color-rgb), 0.5), 0 4px 6px -4px hsla(var(--shadow-color-rgb), 0.5);
+    /* Specific shadows for consistency */
+    --shadow-md: 0 3px 5px -1px hsla(var(--shadow-color-rgb), 0.2), 0 2px 3px -2px hsla(var(--shadow-color-rgb), 0.2);
+    --shadow-lg: 0 8px 12px -3px hsla(var(--shadow-color-rgb), 0.25), 0 3px 5px -4px hsla(var(--shadow-color-rgb), 0.25);
  }
 
- /* === Optional Light Hardware Mode (Less common, but possible) === */
- /* You might need to adjust significantly for a believable light hardware look */
+ /* === Modern Light Palette === */
  @media (prefers-color-scheme: light) {
    :root {
-     /* Example: Light metal panel */
-     --panel-bg: hsl(30, 10%, 85%); /* Light grey/beige */
-     --panel-bg-texture: linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
-     --panel-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+     --panel-bg: hsl(0, 0%, 98%); /* Very light grey, almost white */
+     --panel-bg-texture: none;
+     --panel-noise: none;
 
-     --text-main: hsl(30, 10%, 20%); /* Dark text */
-     --text-secondary: hsl(30, 8%, 40%);
-     --text-label: hsl(30, 10%, 30%);
+     --text-main: hsl(220, 10%, 20%); /* Dark grey for text */
+     --text-secondary: hsl(220, 8%, 40%);
+     --text-label: hsl(220, 8%, 50%);
 
-     --accent-hue: 35;
-     --accent-saturation: 100%; /* Keep orange vibrant */
-     --accent-lightness: 55%;
+     /* Accent hue can remain the same or be adjusted slightly if needed for light mode */
+     /* --accent-hue: 200; */ /* Using the same blue as dark mode for consistency */
+     --accent-saturation: 65%; /* Slightly less saturated for light mode */
+     --accent-lightness: 50%;
      --accent: hsl(var(--accent-hue), var(--accent-saturation), var(--accent-lightness));
-     --accent-dark: hsl(var(--accent-hue), var(--accent-saturation), 45%);
-     --accent-glow: hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.6);
-     --accent-glow-strong: hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.8);
+     --accent-dark: hsl(var(--accent-hue), var(--accent-saturation), 40%);
+     --accent-glow: hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.3);
+     --accent-glow-strong: hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.5);
 
-     --control-bg: hsl(0, 0%, 92%); /* Light grey control */
-     --control-bevel-light: hsla(0, 0%, 100%, 0.7);
-     --control-bevel-dark: hsla(0, 0%, 60%, 0.5);
-     --control-inset-shadow: hsla(0, 0%, 70%, 0.6);
+     --control-bg: hsl(0, 0%, 92%); /* Light grey for controls */
+     --control-bevel-light: hsla(0, 0%, 100%, 0.5); /* Subtle highlight */
+     --control-bevel-dark: hsla(0, 0%, 70%, 0.3);    /* Subtle shadow */
+     --control-inset-shadow: hsla(0, 0%, 80%, 0.5); /* Inner shadow for pressed state */
 
-     --border-color: hsl(30, 10%, 75%);
-     --border-color-light: hsl(30, 10%, 65%);
+     --border-color: hsl(220, 10%, 85%); /* Light border */
+     --border-color-light: hsl(220, 10%, 75%);
 
-     --shadow-color-rgb: 30, 10%, 40%; /* Shadow base color for light mode */
-     --shadow-strength-md: 0.15;
-     --shadow-strength-lg: 0.2;
+     --shadow-color-rgb: 0, 0%, 60%; /* Lighter shadow base for light mode */
+     /* Shadow strength can be inherited or slightly adjusted if needed */
 
      /* Semantic mapping */
      --background: var(--panel-bg);
-     --card: hsl(30, 10%, 90%);
+     --card: hsl(0, 0%, 100%); /* White cards */
      --text: var(--text-main);
      --text-secondary: var(--text-secondary);
      --border: var(--border-color);
      --button-bg: var(--control-bg);
-     --button-hover-bg: hsl(0, 0%, 95%);
-     --button-text: var(--text-main);
-     --code-bg: hsl(30, 10%, 95%);
+     --button-hover-bg: hsl(var(--accent-hue), var(--accent-saturation), 45%); /* Accent for hover */
+     --button-text: hsl(0, 0%, 100%); /* White text on accent hover */
+     --code-bg: hsl(220, 10%, 94%);
      --code-text: var(--text-label);
      --pre-bg: var(--code-bg);
      --focus-ring-color: var(--accent-glow);
 
-     /* Adjust shadows for light mode */
+     /* Adjust shadows for light mode - generally lighter and more diffuse */
      --shadow-panel:
-       inset 0 1px 0 hsla(0, 0%, 0%, 0.03),
-       0 2px 3px 1px hsla(var(--shadow-color-rgb), 0.2),
-       0 0 0 1px hsla(var(--shadow-color-rgb), 0.1);
+       0 1px 2px hsla(var(--shadow-color-rgb), 0.08),
+       0 2px 4px hsla(var(--shadow-color-rgb), 0.08);
       --shadow-control-raised:
-        inset 1px 1px 1px var(--control-bevel-light),
-        inset -1px -1px 1px var(--control-bevel-dark),
-        1px 2px 3px 1px hsla(var(--shadow-color-rgb), var(--shadow-strength-md));
+        0 1px 2px hsla(var(--shadow-color-rgb), 0.12);
       --shadow-control-pressed:
-        inset 2px 2px 4px 1px var(--control-inset-shadow),
-        inset -0.5px -0.5px 0.5px var(--control-bevel-light),
-        inset 0.5px 0.5px 0.5px var(--control-bevel-dark);
+        inset 0 1px 2px hsla(var(--shadow-color-rgb), 0.15);
 
-     --shadow-md: 0 4px 6px -1px hsla(var(--shadow-color-rgb), 0.1), 0 2px 4px -2px hsla(var(--shadow-color-rgb), 0.1);
-     --shadow-lg: 0 10px 15px -3px hsla(var(--shadow-color-rgb), 0.1), 0 4px 6px -4px hsla(var(--shadow-color-rgb), 0.1);
+     --shadow-md: 0 3px 5px -1px hsla(var(--shadow-color-rgb), 0.15), 0 2px 3px -2px hsla(var(--shadow-color-rgb), 0.15);
+     --shadow-lg: 0 8px 12px -3px hsla(var(--shadow-color-rgb), 0.2), 0 3px 5px -4px hsla(var(--shadow-color-rgb), 0.2);
    }
  }
 
@@ -201,77 +186,74 @@
  .container {
    max-width: var(--container-width);
    margin: 0 auto;
-   padding: calc(var(--spacing-unit) * 10) calc(var(--spacing-unit) * 6); /* 40px 24px */
+   padding: calc(var(--spacing-unit) * 8) calc(var(--spacing-unit) * 5); /* 32px 20px, adjusted */
    width: 100%;
  }
 
  /* === Header === */
  header {
-   margin-bottom: calc(var(--spacing-unit) * 10); /* 40px */
+   margin-bottom: calc(var(--spacing-unit) * 8); /* Reduced margin */
    text-align: center;
-   text-shadow: 0 1px 1px hsla(var(--shadow-color-rgb), 0.3); /* Subtle text shadow */
+   text-shadow: none; /* Remove text shadow for cleaner look */
  }
 
  h1 {
-   font-size: clamp(1.8rem, 5vw, 2.5rem);
-   font-weight: 700;
-   margin: 0 0 calc(var(--spacing-unit) * 2) 0;
-   color: var(--accent); /* Use accent for main title */
-   letter-spacing: 0.02em; /* Slightly wider */
-   text-transform: uppercase; /* Common in hardware */
+   font-size: clamp(2rem, 5vw, 2.8rem); /* Slightly larger H1 */
+   font-weight: 600; /* Less heavy */
+   margin: 0 0 calc(var(--spacing-unit) * 3) 0; /* Adjusted margin */
+   color: var(--accent);
+   letter-spacing: normal; /* Reset letter-spacing */
+   text-transform: none; /* Modern H1 */
  }
 
  .subtitle {
-   font-size: clamp(1rem, 3vw, 1.1rem); /* Slightly smaller */
+   font-size: clamp(1rem, 3vw, 1.2rem); /* Slightly larger subtitle */
    color: var(--text-secondary);
    margin: 0;
    font-weight: 400;
  }
 
- /* === Editor Area (Recessed Panel Look) === */
+ /* === Editor Area (Modern Look) === */
  .editor-container {
    display: flex;
    flex-direction: column;
-   gap: calc(var(--spacing-unit) * 8); /* 32px */
+   gap: calc(var(--spacing-unit) * 6); /* Reduced gap */
  }
 
  .input-area {
    position: relative;
    border-radius: var(--border-radius-lg);
-   overflow: hidden; /* Needed for inset shadows */
-   background: var(--panel-bg); /* Match main panel */
-   border: 1px solid var(--border-color);
-   box-shadow: var(--shadow-panel), /* Panel shadow */
-               inset 0 2px 5px hsla(var(--shadow-color-rgb), 0.3); /* Inner recess shadow */
+   overflow: hidden; /* Needed for modern shadows if they clip */
+   background: var(--card); /* Use card background for a slightly elevated panel */
+   border: 1px solid var(--border); /* Subtle border */
+   box-shadow: var(--shadow-md); /* Modern, softer shadow */
    transition: border-color var(--transition-speed) var(--transition-ease),
                box-shadow var(--transition-speed) var(--transition-ease);
  }
 
  .input-area:focus-within {
-   border-color: var(--accent-dark);
-   box-shadow: var(--shadow-panel),
-               inset 0 2px 5px hsla(var(--shadow-color-rgb), 0.3),
-               0 0 0 2px var(--accent-glow); /* Glow focus */
+   border-color: var(--accent); /* Accent color for focus */
+   box-shadow: var(--shadow-md), 0 0 0 3px var(--focus-ring-color); /* Focus ring */
  }
 
  textarea {
    width: 100%;
    min-height: 350px;
    height: 40vh;
-   padding: calc(var(--spacing-unit) * 5); /* 20px */
-   font-size: 0.95rem;
-   border: none;
-   background: var(--card); /* Slightly different bg for text area */
+   padding: calc(var(--spacing-unit) * 4); /* Adjusted padding */
+   font-size: 0.9rem; /* Adjusted font size */
+   border: none; /* Remove default border */
+   background: var(--background); /* Match overall background for seamless look */
    color: var(--text);
    resize: vertical;
    outline: none;
    font-family: var(--font-mono);
    line-height: var(--line-height-code);
    display: block;
-   border-radius: var(--border-radius-sm); /* Inner radius */
-   margin: calc(var(--spacing-unit) * 2); /* Inset the textarea slightly */
-   width: calc(100% - var(--spacing-unit) * 4);
-   box-shadow: inset 0 1px 3px hsla(var(--shadow-color-rgb), 0.4); /* Inner shadow for textarea */
+   border-radius: var(--border-radius-md); /* Consistent with other elements */
+   margin: 0; /* Remove margin, rely on input-area padding */
+   width: 100%; /* Full width within parent */
+   box-shadow: none; /* Remove inner shadow for a flatter look */
    font-variant-ligatures: contextual common-ligatures discretionary-ligatures historical-ligatures;
    -webkit-font-feature-settings: "liga" 1, "calt" 1, "dlig" 1, "hist" 1;
    font-feature-settings: "liga" 1, "calt" 1, "dlig" 1, "hist" 1;
@@ -283,11 +265,10 @@
    flex-wrap: wrap;
    justify-content: space-between;
    align-items: center;
-   gap: calc(var(--spacing-unit) * 4);
-   padding: calc(var(--spacing-unit) * 3) calc(var(--spacing-unit) * 5);
-   background: transparent; /* Let panel show through */
-   border-top: 1px solid var(--border-color);
-   /* No specific rounding needed as it's inside .input-area */
+   gap: calc(var(--spacing-unit) * 3); /* Reduced gap */
+   padding: calc(var(--spacing-unit) * 4) 0; /* Adjusted padding, no horizontal padding needed if buttons handle it */
+   background: transparent;
+   border-top: 1px solid var(--border); /* Use themed border */
  }
 
  .button-group {
@@ -296,97 +277,90 @@
    gap: calc(var(--spacing-unit) * 3);
  }
 
- /* === Buttons (Hardware Style) === */
+ /* === Buttons (Modern Style) === */
  button {
-   padding: calc(var(--spacing-unit) * 2.5) calc(var(--spacing-unit) * 5); /* 10px 20px */
-   font-size: 0.85rem; /* Slightly smaller text */
+   padding: calc(var(--spacing-unit) * 2.8) calc(var(--spacing-unit) * 6); /* Adjusted padding */
+   font-size: 0.9rem; /* Adjusted font size */
    font-family: var(--font-sans);
-   font-weight: 700; /* Bold */
-   text-transform: uppercase; /* Uppercase Labels */
+   font-weight: 500; /* Slightly less bold */
+   text-transform: none; /* Modern buttons often don't use uppercase */
    background-color: var(--button-bg);
-   background-image: linear-gradient(to bottom, hsla(0,0%,100%,0.05), hsla(0,0%,0%,0.05)); /* Subtle gradient */
    color: var(--button-text);
-   border: 1px solid hsla(0, 0%, 10%, 0.8); /* Darker border */
-   border-top-color: hsla(0, 0%, 40%, 0.7); /* Slightly lighter top border */
+   border: 1px solid var(--border-color); /* Use themed border color */
    border-radius: var(--border-radius-md);
    cursor: pointer;
    transition: background-color var(--transition-speed) var(--transition-ease),
-               box-shadow var(--transition-speed) var(--transition-ease),
-               transform var(--transition-speed) var(--transition-ease);
+               border-color var(--transition-speed) var(--transition-ease),
+               transform var(--transition-speed) var(--transition-ease),
+               box-shadow var(--transition-speed) var(--transition-ease);
    box-shadow: var(--shadow-control-raised);
    display: inline-flex;
    align-items: center;
    justify-content: center;
    text-align: center;
    white-space: nowrap;
-   letter-spacing: 0.05em;
-   text-shadow: 0 1px 1px hsla(var(--shadow-color-rgb), 0.3);
+   letter-spacing: normal; /* Reset letter-spacing */
+   text-shadow: none; /* Remove text shadow */
  }
 
  button:hover {
    background-color: var(--button-hover-bg);
-   border-color: hsla(0, 0%, 15%, 0.9);
-   border-top-color: hsla(0, 0%, 50%, 0.8);
-   transform: translateY(-1px); /* Lift slightly */
-   box-shadow: /* Taller Bevel */
-     inset 1px 1px 1px var(--control-bevel-light),
-     inset -1px -1px 1px var(--control-bevel-dark),
-     /* Stronger Drop Shadow */
-     1px 3px 5px 2px hsla(var(--shadow-color-rgb), calc(var(--shadow-strength-md) + 0.1));
+   border-color: var(--accent-dark); /* Use accent for border on hover */
+   color: var(--button-text); /* Ensure text color is appropriate for hover bg */
+   transform: translateY(-1px);
+   box-shadow: var(--shadow-md); /* Use a modern, subtle shadow */
  }
 
  /* Focus state with glow */
  button:focus-visible {
    outline: none; /* Remove default outline */
-   box-shadow: var(--shadow-control-raised), var(--shadow-glow);
+   border-color: var(--accent); /* Accent border for focus */
+   box-shadow: 0 0 0 3px var(--focus-ring-color); /* Modern focus ring */
  }
  /* Fallback */
  button:focus {
    outline: none;
-   box-shadow: var(--shadow-control-raised), var(--shadow-glow);
+   border-color: var(--accent);
+   box-shadow: 0 0 0 3px var(--focus-ring-color);
  }
  button::-moz-focus-inner { border-style: none; }
 
  button:active {
-   background-color: var(--button-bg); /* Revert bg */
-   transform: translateY(1px); /* Push down */
-   box-shadow: var(--shadow-control-pressed); /* Pressed shadow */
-   transition-duration: 0.05s; /* Faster transition on active */
+   background-color: hsl(var(--accent-hue), var(--accent-saturation), 40%); /* Darker accent for active */
+   transform: translateY(0px); /* Reset hover transform */
+   box-shadow: var(--shadow-control-pressed); /* Flatter pressed shadow */
+   transition-duration: 0.05s;
  }
 
- /* Primary Button (Lit Button Look) */
+ /* Primary Button */
  button#renderBtn {
-   background-color: var(--accent-dark); /* Darker orange base */
-   background-image: linear-gradient(to bottom, var(--accent), var(--accent-dark));
-   color: hsl(var(--accent-hue), 15%, 15%); /* Dark text for contrast */
-   border-color: hsla(var(--accent-hue), 70%, 30%, 0.8);
-   border-top-color: hsla(var(--accent-hue), 80%, 65%, 0.7);
-   text-shadow: 0 1px 0px hsla(0, 0%, 100%, 0.2); /* Light text shadow */
-   box-shadow: var(--shadow-control-raised), var(--shadow-glow); /* Add glow */
+   background-color: var(--accent);
+   color: hsl(0, 0%, 100%); /* White text for primary button */
+   border-color: var(--accent-dark); /* Darker accent border */
+   box-shadow: var(--shadow-control-raised), 0 0 5px hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.3); /* Subtle glow */
  }
 
  button#renderBtn:hover {
-   background-color: var(--accent);
-   background-image: linear-gradient(to bottom, hsl(var(--accent-hue), var(--accent-saturation), 65%), var(--accent));
-   border-color: hsla(var(--accent-hue), 70%, 35%, 0.9);
-   border-top-color: hsla(var(--accent-hue), 80%, 70%, 0.8);
-   box-shadow: var(--shadow-control-raised), var(--shadow-glow-strong); /* Brighter glow on hover */
+   background-color: var(--accent-dark);
+   border-color: hsl(var(--accent-hue), var(--accent-saturation), 35%);
+   color: hsl(0, 0%, 100%);
+   box-shadow: var(--shadow-md), 0 0 8px hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.5); /* Stronger glow on hover */
    transform: translateY(-1px);
  }
 
  button#renderBtn:focus-visible {
-   box-shadow: var(--shadow-control-raised), var(--shadow-glow-strong);
+   border-color: var(--accent-dark);
+   box-shadow: 0 0 0 3px var(--focus-ring-color), 0 0 8px hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.5);
  }
  button#renderBtn:focus {
-    box-shadow: var(--shadow-control-raised), var(--shadow-glow-strong);
+    border-color: var(--accent-dark);
+    box-shadow: 0 0 0 3px var(--focus-ring-color), 0 0 8px hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.5);
  }
 
  button#renderBtn:active {
-   background-color: var(--accent-dark);
-   background-image: linear-gradient(to top, var(--accent), var(--accent-dark)); /* Reverse gradient */
-   box-shadow: var(--shadow-control-pressed), /* Pressed shadow */
-               inset 0 0 8px hsla(var(--accent-hue), 90%, 30%, 0.5); /* Inner accent glow */
-   transform: translateY(1px);
+   background-color: hsl(var(--accent-hue), var(--accent-saturation), 35%); /* Even darker for active */
+   box-shadow: var(--shadow-control-pressed);
+   transform: translateY(0px);
  }
 
  /* === Help Text === */
@@ -418,14 +392,13 @@
    box-shadow: inset 0 1px 2px hsla(var(--shadow-color-rgb), 0.3);
  }
 
- /* === Output Area (Screen/Display Look) === */
+ /* === Output Area (Modern Look) === */
  .output-container {
-   background: var(--card); /* Slightly lighter than main panel */
+   background: var(--card); /* Use card background */
    border-radius: var(--border-radius-lg);
-   padding: calc(var(--spacing-unit) * 8); /* 32px */
-   border: 1px solid var(--border-color);
-   box-shadow: var(--shadow-panel), /* Panel shadow */
-               inset 0 3px 6px hsla(var(--shadow-color-rgb), 0.4); /* Deeper inset shadow */
+   padding: calc(var(--spacing-unit) * 6); /* Adjusted padding */
+   border: 1px solid var(--border); /* Subtle border */
+   box-shadow: var(--shadow-md); /* Modern, softer shadow */
    min-height: 150px;
    overflow-wrap: break-word;
    word-wrap: break-word;
@@ -438,46 +411,46 @@
  .output-container > * { margin-block-start: 0; margin-block-end: 1.2em; }
  .output-container > *:last-child { margin-block-end: 0; }
 
- /* === Rendered Content Styling (Retro Display) === */
+ /* === Rendered Content Styling (Modern Display) === */
  .output-container h1,
  .output-container h2,
  .output-container h3,
  .output-container h4,
  .output-container h5,
  .output-container h6 {
-   margin-block-start: 1.8em;
-   margin-block-end: 0.8em;
-   font-weight: 700; /* Bold headings */
-   line-height: 1.3;
-   letter-spacing: 0.01em;
-   color: var(--text-main); /* Ensure main text color */
-   text-shadow: 0 1px 1px hsla(var(--shadow-color-rgb), 0.2);
+   margin-block-start: 1.5em; /* Adjusted margins */
+   margin-block-end: 0.6em;
+   font-weight: 600; /* Slightly less bold */
+   line-height: 1.2; /* Tighter line height for headings */
+   letter-spacing: normal; /* Reset letter-spacing */
+   color: var(--text); /* Use main text color */
+   text-shadow: none; /* Remove text shadow */
  }
 
- .output-container h1 { font-size: 1.8em; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; color: var(--accent); }
- .output-container h2 { font-size: 1.5em; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
- .output-container h3 { font-size: 1.25em; text-transform: uppercase; color: var(--text-label); }
- .output-container h4 { font-size: 1.1em; }
- .output-container h5 { font-size: 1em; font-style: italic; color: var(--text-secondary); }
- .output-container h6 { font-size: 0.9em; color: var(--text-secondary); text-transform: uppercase; }
+ .output-container h1 { font-size: 1.7rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4em; color: var(--accent); }
+ .output-container h2 { font-size: 1.4rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4em; }
+ .output-container h3 { font-size: 1.2rem; text-transform: none; color: var(--text); }
+ .output-container h4 { font-size: 1.1rem; }
+ .output-container h5 { font-size: 1rem; font-style: normal; color: var(--text-secondary); } /* Removed italic */
+ .output-container h6 { font-size: 0.9rem; color: var(--text-secondary); text-transform: none; }
 
- .output-container p { color: var(--text); } /* Slightly brighter text for paragraphs */
+ .output-container p { color: var(--text); line-height: var(--line-height-base); margin-block-end: 1em; }
 
  .output-container ul,
- .output-container ol { padding-left: 2em; }
- .output-container li { margin-block-end: 0.5em; }
- .output-container ul li::marker { color: var(--accent); }
- .output-container ol li::marker { color: var(--accent); font-weight: 700; }
+ .output-container ol { padding-left: 1.5em; /* Reduced padding */ }
+ .output-container li { margin-block-end: 0.3em; /* Reduced margin */ }
+ .output-container ul li::marker { color: var(--accent); /* Keep accent for consistency */ }
+ .output-container ol li::marker { color: var(--accent); font-weight: normal; /* Normal weight */ }
 
  .output-container blockquote {
    margin-left: 0; margin-right: 0;
-   padding: calc(var(--spacing-unit) * 3) calc(var(--spacing-unit) * 5);
-   border-left: 3px solid var(--accent);
-   background-color: hsla(var(--accent-hue), 20%, 25%, 0.2); /* Dim accent bg */
+   padding: calc(var(--spacing-unit) * 3) calc(var(--spacing-unit) * 4); /* Adjusted padding */
+   border-left: 4px solid var(--accent); /* Thicker border */
+   background-color: var(--code-bg); /* Use code background for subtle differentiation */
    color: var(--text-secondary);
-   font-style: italic;
-   border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
-   box-shadow: inset 2px 0 5px hsla(var(--shadow-color-rgb), 0.1);
+   font-style: normal; /* Removed italic */
+   border-radius: var(--border-radius-sm); /* Slight rounding */
+   box-shadow: none; /* Remove inner shadow */
  }
  .output-container blockquote > *:first-child { margin-block-start: 0; }
  .output-container blockquote > *:last-child { margin-block-end: 0; }
@@ -487,12 +460,12 @@
    font-family: var(--font-mono);
    background-color: var(--code-bg);
    color: var(--code-text);
-   padding: calc(var(--spacing-unit) * 0.5) calc(var(--spacing-unit) * 1.5);
+   padding: calc(var(--spacing-unit) * 0.4) calc(var(--spacing-unit) * 1.2); /* Adjusted padding */
    border-radius: var(--border-radius-sm);
-   border: 1px solid var(--border);
-   font-size: 0.85em; /* Slightly smaller */
+   border: 1px solid var(--border-color); /* Use a lighter border */
+   font-size: 0.88em; /* Slightly adjusted size */
    vertical-align: baseline;
-   box-shadow: inset 0 1px 2px hsla(var(--shadow-color-rgb), 0.3);
+   box-shadow: none; /* Remove inner shadow */
    font-variant-ligatures: none;
    -webkit-font-feature-settings: "liga" 0, "calt" 0;
    font-feature-settings: "liga" 0, "calt" 0;
@@ -502,14 +475,14 @@
  .output-container pre {
    font-family: var(--font-mono);
    background-color: var(--pre-bg);
-   border: 1px solid var(--border);
+   border: 1px solid var(--border-color); /* Use a lighter border */
    padding: calc(var(--spacing-unit) * 4);
    border-radius: var(--border-radius-md);
    overflow-x: auto;
    line-height: var(--line-height-code);
-   font-size: 0.85rem; /* Slightly smaller */
+   font-size: 0.88rem; /* Adjusted font size */
    color: var(--text-label);
-   box-shadow: inset 0 2px 5px hsla(var(--shadow-color-rgb), 0.4); /* Deeper inset */
+   box-shadow: none; /* Remove inner shadow */
    font-variant-ligatures: contextual common-ligatures discretionary-ligatures historical-ligatures;
    -webkit-font-feature-settings: "liga" 1, "calt" 1, "dlig" 1, "hist" 1;
    font-feature-settings: "liga" 1, "calt" 1, "dlig" 1, "hist" 1;
@@ -535,129 +508,133 @@
    border-spacing: 0;
    border: 1px solid var(--border);
    border-radius: var(--border-radius-md);
-   overflow: hidden;
+   overflow: hidden; /* Helps contain box shadow */
    margin-block-end: 1.5em;
-   box-shadow: var(--shadow-md);
+   box-shadow: none; /* Remove default shadow, rely on border */
  }
  .output-container th,
  .output-container td {
-   border-bottom: 1px solid var(--border);
-   padding: calc(var(--spacing-unit) * 2.5) calc(var(--spacing-unit) * 4);
+   border-bottom: 1px solid var(--border-color); /* Use lighter border */
+   padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 3); /* Adjusted padding */
    text-align: left; vertical-align: top;
-   color: var(--text-label); /* Dimmer text in tables */
+   color: var(--text); /* Use main text color */
  }
- .output-container td { border-left: 1px solid var(--border); }
+ .output-container td { border-left: 1px solid var(--border-color); /* Use lighter border */ }
  .output-container th:first-child,
  .output-container td:first-child { border-left: none; }
  .output-container tr:last-child td { border-bottom: none; }
 
  .output-container thead th {
-   background-color: hsla(0, 0%, 0%, 0.15); /* Darker header */
-   font-weight: 700;
-   color: var(--text-main);
-   border-bottom: 2px solid var(--border);
-   text-transform: uppercase;
-   font-size: 0.85em;
+   background-color: var(--code-bg); /* Use code background for header */
+   font-weight: 600; /* Slightly less bold */
+   color: var(--text);
+   border-bottom: 1px solid var(--border-color-light); /* Stronger border for header bottom */
+   text-transform: none; /* No uppercase */
+   font-size: 0.9em; /* Adjusted size */
  }
  .output-container tbody tr:nth-child(even) {
-   background-color: hsla(0, 0%, 0%, 0.08); /* Subtle dark stripe */
+   background-color: hsla(var(--shadow-color-rgb), 0.03); /* Very subtle striping */
  }
 
  /* Links */
  .output-container a {
    color: var(--accent);
-   text-decoration: none;
-   font-weight: 700;
+   text-decoration: underline; /* Underline by default for clarity */
+   text-decoration-thickness: 1px; /* Thinner underline */
+   text-underline-offset: 3px; /* More space for underline */
+   font-weight: 500; /* Normal weight */
    transition: color var(--transition-speed) var(--transition-ease),
-               text-shadow var(--transition-speed) var(--transition-ease);
+               text-decoration-color var(--transition-speed) var(--transition-ease);
    border-radius: var(--border-radius-sm);
-   text-shadow: 0 0 5px var(--accent-glow); /* Subtle glow on links */
+   text-shadow: none; /* Remove text shadow */
  }
  .output-container a:hover {
-   color: hsl(var(--accent-hue), var(--accent-saturation), 70%); /* Lighter orange on hover */
-   text-decoration: underline;
-   text-decoration-color: hsla(var(--accent-hue), var(--accent-saturation), var(--accent-lightness), 0.5);
-   text-underline-offset: 3px;
-   text-shadow: 0 0 8px var(--accent-glow-strong);
+   color: var(--accent-dark); /* Darker accent on hover */
+   text-decoration-color: var(--accent-dark);
  }
  .output-container a:focus-visible {
-   outline: 2px solid var(--accent-glow);
+   outline: 2px solid var(--focus-ring-color);
    outline-offset: 2px;
+   text-decoration: none; /* Remove underline on focus for cleaner look */
  }
  .output-container a:focus {
-    outline: 2px solid var(--accent-glow);
+    outline: 2px solid var(--focus-ring-color);
     outline-offset: 2px;
+    text-decoration: none;
  }
 
  /* Images */
  .output-container img {
    max-width: 100%; height: auto;
-   border-radius: var(--border-radius-sm); /* Sharper radius */
+   border-radius: var(--border-radius-md); /* Consistent rounding */
    border: 1px solid var(--border);
-   background-color: var(--panel-bg); /* Dark bg for transparency */
+   background-color: transparent; /* Remove background color */
    display: block;
-   margin-block-start: 1.5em; margin-block-end: 1.5em;
-   box-shadow: var(--shadow-md);
+   margin: 1.5em auto; /* Center images with auto margin */
+   box-shadow: var(--shadow-md); /* Use modern shadow */
  }
 
  /* Horizontal Rules */
  .output-container hr {
    border: none;
-   height: 2px;
-   background-image: linear-gradient(to right, transparent, var(--border-color-light), transparent);
-   margin: calc(var(--spacing-unit) * 10) 0;
+   height: 1px; /* Thinner HR */
+   background-color: var(--border-color); /* Solid color HR */
+   margin: calc(var(--spacing-unit) * 8) 0; /* Adjusted margin */
  }
 
 
- /* === Flowchart & LaTeX (Basic Theming) === */
+ /* === Flowchart & LaTeX (Modern Theming) === */
  /* Apply general panel/card styling */
  .flowchart-container, .latex-display {
-    margin: calc(var(--spacing-unit) * 6) 0;
-    padding: calc(var(--spacing-unit) * 6);
-    background-color: var(--card);
-    border-radius: var(--border-radius-md);
-    border: 1px solid var(--border);
+    margin: calc(var(--spacing-unit) * 5) 0; /* Adjusted margin */
+    padding: calc(var(--spacing-unit) * 5); /* Adjusted padding */
+    background-color: var(--background); /* Use main background for less visual clutter */
+    border-radius: var(--border-radius-lg); /* Larger radius for modern look */
+    border: 1px solid var(--border-color); /* Consistent border */
     overflow: auto;
     text-align: center;
-    box-shadow: var(--shadow-panel), inset 0 2px 4px hsla(var(--shadow-color-rgb), 0.3);
+    box-shadow: var(--shadow-md); /* Consistent modern shadow */
  }
  /* Further styling specific to SVG elements would go here if needed */
  /* Basic flowchart/latex SVG text color */
  .flowchart-container svg text,
  .latex-display svg text,
  .latex-display svg g { /* Target MathJax output */
-    fill: var(--text-label);
-    stroke: var(--text-label); /* Affects some MathJax rendering */
+    fill: var(--text); /* Changed from --text-label and removed stroke */
  }
- /* Style Flowchart SVG Elements */
+ /* Style Flowchart SVG Elements (Modern) */
  .flowchart-node {
-    fill: var(--control-bg); /* Use control background for nodes */
-    stroke: var(--border-color-light);
-    stroke-width: 1.5px;
-    transition: fill var(--transition-speed) var(--transition-ease);
+    fill: var(--card); /* Cleaner fill using card background */
+    stroke: var(--border-color); /* Standard border color */
+    stroke-width: 1px; /* Thinner stroke */
+    transition: fill var(--transition-speed) var(--transition-ease), stroke var(--transition-speed) var(--transition-ease);
  }
- .flowchart-node.start { fill: hsla(var(--accent-hue), 60%, 35%, 0.7); } /* Dim Accent */
- .flowchart-node.end { fill: hsla(0, 50%, 40%, 0.7); }   /* Dim Red */
- .flowchart-node.operation { fill: hsla(210, 30%, 40%, 0.7); } /* Dim Blue */
- .flowchart-node.condition { fill: hsla(50, 30%, 40%, 0.7); } /* Dim Yellow */
+ /* Specific node types with accent colors, more vibrant */
+ .flowchart-node.start { fill: hsl(var(--accent-hue), var(--accent-saturation), 80%); stroke: hsl(var(--accent-hue), var(--accent-saturation), 60%);}
+ .flowchart-node.end { fill: hsl(0, 0%, 70%); stroke: hsl(0, 0%, 50%);} /* Neutral end node */
+ .flowchart-node.operation { fill: hsl(210, 50%, 85%); stroke: hsl(210, 50%, 65%);}
+ .flowchart-node.condition { fill: hsl(50, 70%, 80%); stroke: hsl(50, 70%, 60%);}
+ .flowchart-node.io { fill: hsl(260, 50%, 85%); stroke: hsl(260, 50%, 65%);} /* Distinct IO color */
+ .flowchart-node.sub { fill: hsl(150, 50%, 80%); stroke: hsl(150, 50%, 60%);} /* Distinct Subroutine color */
+
 
  .flowchart-text {
     font-family: var(--font-sans);
-    font-size: 12px; /* Slightly smaller */
+    font-size: 11px; /* Slightly smaller for modern feel */
     text-anchor: middle;
     dominant-baseline: central;
-    fill: var(--text-main); /* Brighter text for readability */
+    fill: var(--text); /* Use main text color */
     pointer-events: none;
  }
 
  .flowchart-line {
-    stroke: var(--text-secondary);
-    stroke-width: 1.5px;
+    stroke: var(--border-color-light); /* Lighter lines */
+    stroke-width: 1px; /* Thinner lines */
     fill: none;
  }
 
  .flowchart-arrow {
-    fill: var(--text-secondary);
+    fill: var(--border-color-light); /* Match line color */
  }
 
  /* Fallback for Flowchart Source Code */
@@ -676,50 +653,45 @@
  }
 
 
- /* === Scrollbar Styling (Retro) === */
+ /* === Scrollbar Styling (Modern/Minimalist) === */
  ::-webkit-scrollbar {
-   width: 12px; /* Slightly thicker */
-   height: 12px;
+   width: 10px; /* Slimmer scrollbar */
+   height: 10px;
  }
  ::-webkit-scrollbar-track {
-   background: var(--panel-bg); /* Match panel */
-   border-radius: 0; /* Square track */
-   border: 1px solid var(--border);
-   box-shadow: inset 0 0 3px hsla(var(--shadow-color-rgb), 0.3);
+   background: var(--background); /* Match background */
+   border-radius: var(--border-radius-sm);
+   border: none; /* Remove border */
  }
  ::-webkit-scrollbar-thumb {
-   background-color: var(--control-bg); /* Control color */
+   background-color: var(--border-color-light); /* Subtle thumb color */
    border-radius: var(--border-radius-sm);
-   border: 1px solid var(--border-color-light);
-   box-shadow: inset 0 0 2px hsla(var(--shadow-color-rgb), 0.5);
+   border: 2px solid var(--background); /* Creates padding around thumb */
  }
  ::-webkit-scrollbar-thumb:hover {
-   background-color: var(--button-hover-bg);
-   border-color: var(--accent);
+   background-color: var(--accent); /* Accent color on hover */
  }
  ::-webkit-scrollbar-corner { background: transparent; }
 
- /* Scrollbars within elements */
+ /* Scrollbars within elements - keep them consistent */
  textarea::-webkit-scrollbar-track,
  .output-container pre::-webkit-scrollbar-track,
  .flowchart-container::-webkit-scrollbar-track,
  .latex-display::-webkit-scrollbar-track {
-    background: var(--code-bg); /* Darker track inside elements */
-    box-shadow: inset 0 0 3px hsla(var(--shadow-color-rgb), 0.5);
+    background: var(--code-bg); /* Or var(--background) if code-bg is too dark */
  }
  textarea::-webkit-scrollbar-thumb,
  .output-container pre::-webkit-scrollbar-thumb,
  .flowchart-container::-webkit-scrollbar-thumb,
  .latex-display::-webkit-scrollbar-thumb {
-    background-color: var(--text-secondary); /* Dimmer thumb */
-    border-color: var(--border);
+    background-color: var(--text-secondary);
+    border: 2px solid var(--code-bg); /* Padding effect for internal scrollbars */
  }
   textarea::-webkit-scrollbar-thumb:hover,
  .output-container pre::-webkit-scrollbar-thumb:hover,
  .flowchart-container::-webkit-scrollbar-thumb:hover,
  .latex-display::-webkit-scrollbar-thumb:hover {
-    background-color: var(--text-main);
-    border-color: var(--accent);
+    background-color: var(--accent);
  }
 
 
@@ -1135,6 +1107,11 @@ $$
 f(x) &= x^2 + 2x + 1 \\
 &= (x+1)^2
 \end{align}
+$$
+
+Векторы с \boldsymbol{\nabla}:
+$$
+\boldsymbol{F} = q(\boldsymbol{E} + \boldsymbol{v} \times \boldsymbol{B})
 $$
 
 Flowchart:
