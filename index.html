@@ -53,6 +53,14 @@
       --flow-current-text: #131919;
       --flow-approved-fill: #5c6666;
       --flow-approved-text: #f0f4f4;
+      --flow-past-fill: #3b4141;
+      --flow-past-text: #f2f6f6;
+      --flow-future-fill: #2a3131;
+      --flow-future-text: #f2f6f6;
+      --flow-invalid-fill: #a33f3d;
+      --flow-invalid-text: #f8d9d8;
+      --flow-rejected-fill: #6d3736;
+      --flow-rejected-text: #ffd6d5;
       --space-1: 4px;
       --space-2: 8px;
       --space-3: 12px;
@@ -99,6 +107,14 @@
       --flow-current-text: #f2f7f7;
       --flow-approved-fill: #c4cece;
       --flow-approved-text: #1b2323;
+      --flow-past-fill: #d7e0e0;
+      --flow-past-text: #152020;
+      --flow-future-fill: #ecf2f2;
+      --flow-future-text: #152020;
+      --flow-invalid-fill: #e7b8b6;
+      --flow-invalid-text: #3b1615;
+      --flow-rejected-fill: #e9c7c5;
+      --flow-rejected-text: #3b1817;
     }
 
     * {
@@ -943,8 +959,16 @@ cond(no)->op
       const fillColor = rootStyle.getPropertyValue("--color-surface").trim() || "#101212";
       const accentColor = rootStyle.getPropertyValue("--color-accent").trim() || "#f2f7f7";
       const flowCurrentTextColor = rootStyle.getPropertyValue("--flow-current-text").trim() || "#131919";
+      const flowPastFill = rootStyle.getPropertyValue("--flow-past-fill").trim() || "#3b4141";
+      const flowPastText = rootStyle.getPropertyValue("--flow-past-text").trim() || textColor;
+      const flowFutureFill = rootStyle.getPropertyValue("--flow-future-fill").trim() || "#2a3131";
+      const flowFutureText = rootStyle.getPropertyValue("--flow-future-text").trim() || textColor;
+      const flowInvalidFill = rootStyle.getPropertyValue("--flow-invalid-fill").trim() || "#a33f3d";
+      const flowInvalidText = rootStyle.getPropertyValue("--flow-invalid-text").trim() || "#f8d9d8";
       const flowApprovedFill = rootStyle.getPropertyValue("--flow-approved-fill").trim() || "#5c6666";
       const flowApprovedText = rootStyle.getPropertyValue("--flow-approved-text").trim() || "#f0f4f4";
+      const flowRejectedFill = rootStyle.getPropertyValue("--flow-rejected-fill").trim() || "#6d3736";
+      const flowRejectedText = rootStyle.getPropertyValue("--flow-rejected-text").trim() || "#ffd6d5";
 
       containers.forEach((container) => {
         const encoded = container.getAttribute("data-flowchart");
@@ -980,12 +1004,12 @@ cond(no)->op
               condition: { class: "flowchart-node condition" }
             },
             flowstate: {
-              past: { fill: "#3b4141", "font-color": textColor },
+              past: { fill: flowPastFill, "font-color": flowPastText },
               current: { fill: accentColor, "font-color": flowCurrentTextColor, "font-weight": "bold" },
-              future: { fill: "#2a3131", "font-color": textColor },
-              invalid: { fill: "#a33f3d", "font-color": "#f8d9d8" },
+              future: { fill: flowFutureFill, "font-color": flowFutureText },
+              invalid: { fill: flowInvalidFill, "font-color": flowInvalidText },
               approved: { fill: flowApprovedFill, "font-color": flowApprovedText },
-              rejected: { fill: "#6d3736", "font-color": "#ffd6d5" }
+              rejected: { fill: flowRejectedFill, "font-color": flowRejectedText }
             }
           });
         } catch (error) {
